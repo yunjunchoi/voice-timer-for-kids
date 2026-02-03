@@ -1,7 +1,7 @@
 {
   "name": "Voice Stopwatch Timer For Kids",
   "short_name": "Voice Timer",
-  "description": "스톱워치와 타이머, 음성으로 숫자를 세어주는 어린이용 앱",
+  "description": "Voice counting stopwatch and timer for kids | 音声カウント付きタイマー | 语音计数定时器",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#667eea",
