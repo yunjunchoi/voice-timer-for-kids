@@ -1,0 +1,26 @@
+{
+  "name": "Voice Stopwatch Timer For Kids",
+  "short_name": "Voice Timer",
+  "description": "스톱워치와 타이머, 음성으로 숫자를 세어주는 어린이용 앱",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23667eea;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23764ba2;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='120' fill='url(%23grad)'/%3E%3Ccircle cx='256' cy='280' r='140' fill='none' stroke='white' stroke-width='20'/%3E%3Cline x1='256' y1='280' x2='256' y2='180' stroke='white' stroke-width='16' stroke-linecap='round'/%3E%3Cline x1='256' y1='280' x2='320' y2='280' stroke='white' stroke-width='12' stroke-linecap='round'/%3E%3Crect x='236' y='100' width='40' height='30' rx='8' fill='white'/%3E%3Cpath d='M 100 240 Q 80 260 100 280' fill='none' stroke='white' stroke-width='12' stroke-linecap='round' opacity='0.7'/%3E%3Cpath d='M 70 220 Q 40 260 70 300' fill='none' stroke='white' stroke-width='12' stroke-linecap='round' opacity='0.5'/%3E%3Cpath d='M 412 240 Q 432 260 412 280' fill='none' stroke='white' stroke-width='12' stroke-linecap='round' opacity='0.7'/%3E%3Cpath d='M 442 220 Q 472 260 442 300' fill='none' stroke='white' stroke-width='12' stroke-linecap='round' opacity='0.5'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23667eea;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23764ba2;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='192' height='192' rx='45' fill='url(%23grad)'/%3E%3Ccircle cx='96' cy='105' r='52' fill='none' stroke='white' stroke-width='8'/%3E%3Cline x1='96' y1='105' x2='96' y2='67' stroke='white' stroke-width='6' stroke-linecap='round'/%3E%3Cline x1='96' y1='105' x2='120' y2='105' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3Crect x='88' y='37' width='16' height='12' rx='3' fill='white'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["education", "utilities", "kids"],
+  "lang": "ko-KR",
+  "dir": "ltr"
+}

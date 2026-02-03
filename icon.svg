@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#grad)"/>
+  
+  <!-- Stopwatch circle -->
+  <circle cx="256" cy="280" r="140" fill="none" stroke="white" stroke-width="20"/>
+  
+  <!-- Clock hands -->
+  <line x1="256" y1="280" x2="256" y2="180" stroke="white" stroke-width="16" stroke-linecap="round"/>
+  <line x1="256" y1="280" x2="320" y2="280" stroke="white" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- Top button -->
+  <rect x="236" y="100" width="40" height="30" rx="8" fill="white"/>
+  
+  <!-- Sound waves -->
+  <path d="M 100 240 Q 80 260 100 280" fill="none" stroke="white" stroke-width="12" stroke-linecap="round" opacity="0.7"/>
+  <path d="M 70 220 Q 40 260 70 300" fill="none" stroke="white" stroke-width="12" stroke-linecap="round" opacity="0.5"/>
+  
+  <path d="M 412 240 Q 432 260 412 280" fill="none" stroke="white" stroke-width="12" stroke-linecap="round" opacity="0.7"/>
+  <path d="M 442 220 Q 472 260 442 300" fill="none" stroke="white" stroke-width="12" stroke-linecap="round" opacity="0.5"/>
+</svg>
