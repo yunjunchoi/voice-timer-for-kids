@@ -249,18 +249,18 @@
         <h1 id="mainTitle">⏱️ Voice Stopwatch</h1>
         
         <div class="mode-selector">
-            <button class="mode-btn active" data-mode="stopwatch">스톱워치</button>
-            <button class="mode-btn" data-mode="timer">타이머</button>
+            <button class="mode-btn active" data-mode="stopwatch" id="stopwatchBtn"></button>
+            <button class="mode-btn" data-mode="timer" id="timerBtn"></button>
         </div>
         
         <div class="timer-input hidden" id="timerInput">
             <div class="input-group">
                 <input type="number" inputmode="numeric" pattern="[0-9]*" id="minutes" placeholder="0" min="0" value="">
-                <span class="input-label">분</span>
+                <span class="input-label" id="minutesLabel"></span>
             </div>
             <div class="input-group">
                 <input type="number" inputmode="numeric" pattern="[0-9]*" id="seconds" placeholder="0" min="0" value="">
-                <span class="input-label">초</span>
+                <span class="input-label" id="secondsLabel"></span>
             </div>
         </div>
         
@@ -269,23 +269,23 @@
         </div>
         
         <div class="controls">
-            <button class="btn btn-start" id="startBtn">시작</button>
-            <button class="btn btn-stop hidden" id="stopBtn">정지</button>
-            <button class="btn btn-reset" id="resetBtn">리셋</button>
+            <button class="btn btn-start" id="startBtn"></button>
+            <button class="btn btn-stop hidden" id="stopBtn"></button>
+            <button class="btn btn-reset" id="resetBtn"></button>
         </div>
         
         <div class="settings">
             <div class="setting-group">
                 <div class="setting-label">
-                    <span>🔊 음성 카운트</span>
+                    <span id="voiceCountLabel"></span>
                     <div class="toggle-switch" id="voiceToggle"></div>
                 </div>
-                <button class="btn" id="testVoiceBtn" style="margin-top: 10px; background: #2196F3; color: white;">테스트 (1, 2, 3)</button>
+                <button class="btn" id="testVoiceBtn" style="margin-top: 10px; background: #2196F3; color: white;"></button>
             </div>
             
             <div class="setting-group">
                 <div class="setting-label">
-                    <span>🌐 언어</span>
+                    <span id="languageLabel"></span>
                 </div>
                 <select id="langSelect">
                     <option value="ko-KR">한국어</option>
@@ -295,38 +295,100 @@
             
             <div class="setting-group">
                 <div class="setting-label">
-                    <span>🎙️ 목소리</span>
+                    <span id="voiceLabel"></span>
                 </div>
                 <select id="voiceSelect"></select>
             </div>
             
             <div class="setting-group">
                 <div class="setting-label">
-                    <span>⚡ 속도</span>
+                    <span id="speedLabel"></span>
                 </div>
                 <input type="range" id="rateSlider" min="0.5" max="3" step="0.1" value="1">
                 <div class="range-label">
-                    <span>느리게</span>
+                    <span id="slowLabel"></span>
                     <span id="rateValue">1.0x</span>
-                    <span>빠르게</span>
+                    <span id="fastLabel"></span>
                 </div>
             </div>
             
             <div class="setting-group">
                 <div class="setting-label">
-                    <span>🎵 음높이</span>
+                    <span id="pitchLabel"></span>
                 </div>
                 <input type="range" id="pitchSlider" min="0.5" max="2" step="0.1" value="1">
                 <div class="range-label">
-                    <span>낮게</span>
+                    <span id="lowLabel"></span>
                     <span id="pitchValue">1.0x</span>
-                    <span>높게</span>
+                    <span id="highLabel"></span>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Auto-detect browser language
+        const browserLang = navigator.language || navigator.userLanguage;
+        const isKorean = browserLang.startsWith('ko');
+        
+        // Multi-language text
+        const i18n = {
+            ko: {
+                stopwatch: '스톱워치',
+                timer: '타이머',
+                titleStopwatch: '⏱️ Voice Stopwatch',
+                titleTimer: '⏱️ Voice Timer',
+                start: '시작',
+                stop: '정지',
+                reset: '리셋',
+                minutes: '분',
+                seconds: '초',
+                voiceCount: '🔊 음성 카운트',
+                testVoice: '테스트 (1, 2, 3)',
+                language: '🌐 언어',
+                voice: '🎙️ 목소리',
+                speed: '⚡ 속도',
+                pitch: '🎵 음높이',
+                slow: '느리게',
+                fast: '빠르게',
+                low: '낮게',
+                high: '높게',
+                timeUp: '시간 종료',
+                voiceEnabled: '음성 활성화',
+                testSpeech: '일, 이, 삼',
+                setTime: '시간을 설정해주세요!',
+                installBtn: '📱 홈화면에 추가'
+            },
+            en: {
+                stopwatch: 'Stopwatch',
+                timer: 'Timer',
+                titleStopwatch: '⏱️ Voice Stopwatch',
+                titleTimer: '⏱️ Voice Timer',
+                start: 'Start',
+                stop: 'Stop',
+                reset: 'Reset',
+                minutes: 'min',
+                seconds: 'sec',
+                voiceCount: '🔊 Voice Count',
+                testVoice: 'Test (1, 2, 3)',
+                language: '🌐 Language',
+                voice: '🎙️ Voice',
+                speed: '⚡ Speed',
+                pitch: '🎵 Pitch',
+                slow: 'Slow',
+                fast: 'Fast',
+                low: 'Low',
+                high: 'High',
+                timeUp: 'Time is up',
+                voiceEnabled: 'Voice enabled',
+                testSpeech: 'One, Two, Three',
+                setTime: 'Please set the time!',
+                installBtn: '📱 Add to Home'
+            }
+        };
+        
+        const t = isKorean ? i18n.ko : i18n.en;
+        
         // State
         let mode = 'stopwatch';
         let isRunning = false;
@@ -417,6 +479,33 @@
         
         langSelect.addEventListener('change', populateVoiceList);
         
+        // Initialize UI text
+        function initializeUI() {
+            document.getElementById('mainTitle').textContent = t.titleStopwatch;
+            document.getElementById('stopwatchBtn').textContent = t.stopwatch;
+            document.getElementById('timerBtn').textContent = t.timer;
+            document.getElementById('startBtn').textContent = t.start;
+            document.getElementById('stopBtn').textContent = t.stop;
+            document.getElementById('resetBtn').textContent = t.reset;
+            document.getElementById('minutesLabel').textContent = t.minutes;
+            document.getElementById('secondsLabel').textContent = t.seconds;
+            document.getElementById('voiceCountLabel').textContent = t.voiceCount;
+            document.getElementById('testVoiceBtn').textContent = t.testVoice;
+            document.getElementById('languageLabel').textContent = t.language;
+            document.getElementById('voiceLabel').textContent = t.voice;
+            document.getElementById('speedLabel').textContent = t.speed;
+            document.getElementById('pitchLabel').textContent = t.pitch;
+            document.getElementById('slowLabel').textContent = t.slow;
+            document.getElementById('fastLabel').textContent = t.fast;
+            document.getElementById('lowLabel').textContent = t.low;
+            document.getElementById('highLabel').textContent = t.high;
+            
+            // Auto-select language
+            langSelect.value = isKorean ? 'ko-KR' : 'en-US';
+        }
+        
+        initializeUI();
+        
         // Speak function
         function speak(text, force = false) {
             if (!voiceEnabled && !force) return;
@@ -487,7 +576,7 @@
                         // 100초 이하: 모든 숫자
                         speak(String(seconds));
                     } else if (seconds === 0) {
-                        speak(langSelect.value === 'ko-KR' ? '시간 종료' : 'Time is up');
+                        speak(t.timeUp);
                         stop();
                     }
                 }
@@ -533,7 +622,7 @@
                 time = m * 60 + s;
                 
                 if (time === 0) {
-                    alert('시간을 설정해주세요!');
+                    alert(t.setTime);
                     return;
                 }
             }
@@ -589,10 +678,10 @@
                 
                 if (mode === 'timer') {
                     timerInput.classList.remove('hidden');
-                    mainTitle.textContent = '⏱️ Voice Timer';
+                    mainTitle.textContent = t.titleTimer;
                 } else {
                     timerInput.classList.add('hidden');
-                    mainTitle.textContent = '⏱️ Voice Stopwatch';
+                    mainTitle.textContent = t.titleStopwatch;
                 }
                 
                 reset();
@@ -607,15 +696,14 @@
             // Test voice when enabled
             if (voiceEnabled) {
                 setTimeout(() => {
-                    speak(langSelect.value === 'ko-KR' ? '음성 활성화' : 'Voice enabled', true);
+                    speak(t.voiceEnabled, true);
                 }, 100);
             }
         });
         
         // Test voice button
         document.getElementById('testVoiceBtn').addEventListener('click', () => {
-            const testText = langSelect.value === 'ko-KR' ? '일, 이, 삼' : 'One, Two, Three';
-            speak(testText, true);
+            speak(t.testSpeech, true);
         });
         
         // Sliders
@@ -671,7 +759,7 @@
         
         function showInstallPromotion() {
             const installBtn = document.createElement('button');
-            installBtn.textContent = '📱 홈화면에 추가';
+            installBtn.textContent = t.installBtn;
             installBtn.className = 'btn';
             installBtn.style.cssText = 'position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #4CAF50; color: white; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.4);';
             
