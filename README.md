@@ -1,6 +1,6 @@
 # Voice Stopwatch Timer For Kids - PWA
 
-> 🌍 **Multi-language support**: Korean, English, Chinese, Japanese
+> 🌍 **Multi-language support**: Korean, English, Chinese, Japanese, Spanish, Portuguese, French
 
 ## 📱 Features
 
@@ -19,6 +19,9 @@
 - 🇺🇸 **English**
 - 🇨🇳 **中文** (Chinese Simplified)
 - 🇯🇵 **日本語** (Japanese)
+- 🇪🇸 **Español** (Spanish)
+- 🇧🇷 **Português** (Portuguese - Brazil)
+- 🇫🇷 **Français** (French)
 
 Auto-detects browser language and sets UI + voice accordingly!
 
@@ -73,6 +76,8 @@ Auto-detects browser language and sets UI + voice accordingly!
 
 ## 📝 Version History
 
+- **v1.5** (2026-02-04): Voice count enabled by default
+- **v1.4** (2026-02-04): Added Spanish, Portuguese, French language support
 - **v1.3** (2026-02-04): Added Chinese & Japanese language support
 - **v1.2** (2026-02-04): Added alarm sound effect
 - **v1.1** (2026-02-04): Added auto-detect language (KO/EN)

@@ -300,6 +300,9 @@
                     <option value="en-US">English</option>
                     <option value="zh-CN">中文 (Chinese)</option>
                     <option value="ja-JP">日本語 (Japanese)</option>
+                    <option value="es-ES">Español (Spanish)</option>
+                    <option value="pt-BR">Português (Portuguese)</option>
+                    <option value="fr-FR">Français (French)</option>
                 </select>
             </div>
             
@@ -343,6 +346,9 @@
         if (browserLang.startsWith('ko')) detectedLang = 'ko';
         else if (browserLang.startsWith('zh')) detectedLang = 'zh';
         else if (browserLang.startsWith('ja')) detectedLang = 'ja';
+        else if (browserLang.startsWith('es')) detectedLang = 'es';
+        else if (browserLang.startsWith('pt')) detectedLang = 'pt';
+        else if (browserLang.startsWith('fr')) detectedLang = 'fr';
         
         // Multi-language text
         const i18n = {
@@ -457,6 +463,90 @@
                 installBtn: '📱 ホーム画面に追加',
                 soundEffect: '🔔 アラーム音',
                 testSound: 'サウンドテスト'
+            },
+            es: {
+                stopwatch: 'Cronómetro',
+                timer: 'Temporizador',
+                titleStopwatch: '⏱️ Cronómetro de Voz',
+                titleTimer: '⏱️ Temporizador de Voz',
+                start: 'Iniciar',
+                stop: 'Detener',
+                reset: 'Reiniciar',
+                minutes: 'min',
+                seconds: 'seg',
+                voiceCount: '🔊 Conteo de Voz',
+                testVoice: 'Prueba (1, 2, 3)',
+                language: '🌐 Idioma',
+                voice: '🎙️ Voz',
+                speed: '⚡ Velocidad',
+                pitch: '🎵 Tono',
+                slow: 'Lento',
+                fast: 'Rápido',
+                low: 'Bajo',
+                high: 'Alto',
+                timeUp: 'Tiempo terminado',
+                voiceEnabled: 'Voz activada',
+                testSpeech: 'Uno, Dos, Tres',
+                setTime: '¡Por favor configura el tiempo!',
+                installBtn: '📱 Añadir a pantalla de inicio',
+                soundEffect: '🔔 Sonido de alarma',
+                testSound: 'Probar sonido'
+            },
+            pt: {
+                stopwatch: 'Cronômetro',
+                timer: 'Temporizador',
+                titleStopwatch: '⏱️ Cronômetro de Voz',
+                titleTimer: '⏱️ Temporizador de Voz',
+                start: 'Iniciar',
+                stop: 'Parar',
+                reset: 'Reiniciar',
+                minutes: 'min',
+                seconds: 'seg',
+                voiceCount: '🔊 Contagem de Voz',
+                testVoice: 'Teste (1, 2, 3)',
+                language: '🌐 Idioma',
+                voice: '🎙️ Voz',
+                speed: '⚡ Velocidade',
+                pitch: '🎵 Tom',
+                slow: 'Devagar',
+                fast: 'Rápido',
+                low: 'Baixo',
+                high: 'Alto',
+                timeUp: 'Tempo esgotado',
+                voiceEnabled: 'Voz ativada',
+                testSpeech: 'Um, Dois, Três',
+                setTime: 'Por favor, defina o tempo!',
+                installBtn: '📱 Adicionar à tela inicial',
+                soundEffect: '🔔 Som de alarme',
+                testSound: 'Testar som'
+            },
+            fr: {
+                stopwatch: 'Chronomètre',
+                timer: 'Minuteur',
+                titleStopwatch: '⏱️ Chronomètre Vocal',
+                titleTimer: '⏱️ Minuteur Vocal',
+                start: 'Démarrer',
+                stop: 'Arrêter',
+                reset: 'Réinitialiser',
+                minutes: 'min',
+                seconds: 'sec',
+                voiceCount: '🔊 Comptage Vocal',
+                testVoice: 'Test (1, 2, 3)',
+                language: '🌐 Langue',
+                voice: '🎙️ Voix',
+                speed: '⚡ Vitesse',
+                pitch: '🎵 Tonalité',
+                slow: 'Lent',
+                fast: 'Rapide',
+                low: 'Bas',
+                high: 'Haut',
+                timeUp: 'Temps écoulé',
+                voiceEnabled: 'Voix activée',
+                testSpeech: 'Un, Deux, Trois',
+                setTime: 'Veuillez définir le temps!',
+                installBtn: '📱 Ajouter à l\'écran d\'accueil',
+                soundEffect: '🔔 Son d\'alarme',
+                testSound: 'Tester le son'
             }
         };
         
@@ -617,7 +707,10 @@
                 'ko': 'ko-KR',
                 'en': 'en-US',
                 'zh': 'zh-CN',
-                'ja': 'ja-JP'
+                'ja': 'ja-JP',
+                'es': 'es-ES',
+                'pt': 'pt-BR',
+                'fr': 'fr-FR'
             };
             langSelect.value = langMap[detectedLang] || 'en-US';
         }
