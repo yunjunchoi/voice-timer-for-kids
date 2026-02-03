@@ -278,7 +278,7 @@
             <div class="setting-group">
                 <div class="setting-label">
                     <span id="voiceCountLabel"></span>
-                    <div class="toggle-switch" id="voiceToggle"></div>
+                    <div class="toggle-switch active" id="voiceToggle"></div>
                 </div>
                 <button class="btn" id="testVoiceBtn" style="margin-top: 10px; background: #2196F3; color: white;"></button>
             </div>
@@ -468,7 +468,7 @@
         let time = 0;
         let timerDuration = 60;
         let interval = null;
-        let voiceEnabled = false;
+        let voiceEnabled = true; // 음성 카운트 기본 켜짐
         let soundEnabled = true; // 알람 효과음 기본 켜짐
         let lastSpoken = -1;
         
