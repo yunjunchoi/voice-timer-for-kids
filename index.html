@@ -285,6 +285,14 @@
             
             <div class="setting-group">
                 <div class="setting-label">
+                    <span id="soundEffectLabel"></span>
+                    <div class="toggle-switch active" id="soundToggle"></div>
+                </div>
+                <button class="btn" id="testSoundBtn" style="margin-top: 10px; background: #FF9800; color: white;"></button>
+            </div>
+            
+            <div class="setting-group">
+                <div class="setting-label">
                     <span id="languageLabel"></span>
                 </div>
                 <select id="langSelect">
@@ -357,7 +365,9 @@
                 voiceEnabled: '음성 활성화',
                 testSpeech: '일, 이, 삼',
                 setTime: '시간을 설정해주세요!',
-                installBtn: '📱 홈화면에 추가'
+                installBtn: '📱 홈화면에 추가',
+                soundEffect: '🔔 알람 효과음',
+                testSound: '효과음 테스트'
             },
             en: {
                 stopwatch: 'Stopwatch',
@@ -383,7 +393,9 @@
                 voiceEnabled: 'Voice enabled',
                 testSpeech: 'One, Two, Three',
                 setTime: 'Please set the time!',
-                installBtn: '📱 Add to Home'
+                installBtn: '📱 Add to Home',
+                soundEffect: '🔔 Alarm Sound',
+                testSound: 'Test Sound'
             }
         };
         
@@ -396,6 +408,7 @@
         let timerDuration = 60;
         let interval = null;
         let voiceEnabled = false;
+        let soundEnabled = true; // 알람 효과음 기본 켜짐
         let lastSpoken = -1;
         
         // Elements
@@ -419,6 +432,42 @@
         const synth = window.speechSynthesis;
         let voices = [];
         let wakeLock = null;
+        
+        // Audio Context for sound effects
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        
+        // Play beep sound
+        function playBeep(frequency = 800, duration = 200, volume = 0.3) {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration / 1000);
+            
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + duration / 1000);
+        }
+        
+        // Play alarm sound (multiple beeps)
+        function playAlarm() {
+            // Resume audio context if suspended (mobile requirement)
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            
+            // Play 4 beeps with increasing pitch
+            playBeep(600, 150, 0.3);
+            setTimeout(() => playBeep(700, 150, 0.3), 200);
+            setTimeout(() => playBeep(800, 150, 0.3), 400);
+            setTimeout(() => playBeep(900, 200, 0.4), 600);
+        }
         
         // Load voices
         function loadVoices() {
@@ -491,6 +540,8 @@
             document.getElementById('secondsLabel').textContent = t.seconds;
             document.getElementById('voiceCountLabel').textContent = t.voiceCount;
             document.getElementById('testVoiceBtn').textContent = t.testVoice;
+            document.getElementById('soundEffectLabel').textContent = t.soundEffect;
+            document.getElementById('testSoundBtn').textContent = t.testSound;
             document.getElementById('languageLabel').textContent = t.language;
             document.getElementById('voiceLabel').textContent = t.voice;
             document.getElementById('speedLabel').textContent = t.speed;
@@ -576,7 +627,8 @@
                         // 100초 이하: 모든 숫자
                         speak(String(seconds));
                     } else if (seconds === 0) {
-                        speak(t.timeUp);
+                        if (soundEnabled) playAlarm();
+                        setTimeout(() => speak(t.timeUp), 500);
                         stop();
                     }
                 }
@@ -704,6 +756,18 @@
         // Test voice button
         document.getElementById('testVoiceBtn').addEventListener('click', () => {
             speak(t.testSpeech, true);
+        });
+        
+        // Sound toggle
+        const soundToggle = document.getElementById('soundToggle');
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundToggle.classList.toggle('active');
+        });
+        
+        // Test sound button
+        document.getElementById('testSoundBtn').addEventListener('click', () => {
+            playAlarm();
         });
         
         // Sliders
