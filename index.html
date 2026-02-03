@@ -368,9 +368,7 @@
                 voiceEnabled: '음성 활성화',
                 testSpeech: '일, 이, 삼',
                 setTime: '시간을 설정해주세요!',
-                installBtn: '📱 홈화면에 추가',
-                soundEffect: '🔔 알람 효과음',
-                testSound: '효과음 테스트'
+                installBtn: '📱 홈화면에 추가'
             },
             en: {
                 stopwatch: 'Stopwatch',
@@ -396,9 +394,7 @@
                 voiceEnabled: 'Voice enabled',
                 testSpeech: 'One, Two, Three',
                 setTime: 'Please set the time!',
-                installBtn: '📱 Add to Home',
-                soundEffect: '🔔 Alarm Sound',
-                testSound: 'Test Sound'
+                installBtn: '📱 Add to Home'
             },
             zh: {
                 stopwatch: '秒表',
@@ -424,9 +420,7 @@
                 voiceEnabled: '语音已启用',
                 testSpeech: '一，二，三',
                 setTime: '请设置时间！',
-                installBtn: '📱 添加到主屏幕',
-                soundEffect: '🔔 闹钟声音',
-                testSound: '测试声音'
+                installBtn: '📱 添加到主屏幕'
             },
             ja: {
                 stopwatch: 'ストップウォッチ',
@@ -452,9 +446,7 @@
                 voiceEnabled: '音声有効',
                 testSpeech: '一、二、三',
                 setTime: '時間を設定してください！',
-                installBtn: '📱 ホーム画面に追加',
-                soundEffect: '🔔 アラーム音',
-                testSound: 'サウンドテスト'
+                installBtn: '📱 ホーム画面に追加'
             },
             es: {
                 stopwatch: 'Cronómetro',
@@ -480,9 +472,7 @@
                 voiceEnabled: 'Voz activada',
                 testSpeech: 'Uno, Dos, Tres',
                 setTime: '¡Por favor configura el tiempo!',
-                installBtn: '📱 Añadir a pantalla de inicio',
-                soundEffect: '🔔 Sonido de alarma',
-                testSound: 'Probar sonido'
+                installBtn: '📱 Añadir a pantalla de inicio'
             },
             pt: {
                 stopwatch: 'Cronômetro',
@@ -508,9 +498,7 @@
                 voiceEnabled: 'Voz ativada',
                 testSpeech: 'Um, Dois, Três',
                 setTime: 'Por favor, defina o tempo!',
-                installBtn: '📱 Adicionar à tela inicial',
-                soundEffect: '🔔 Som de alarme',
-                testSound: 'Testar som'
+                installBtn: '📱 Adicionar à tela inicial'
             },
             fr: {
                 stopwatch: 'Chronomètre',
@@ -536,9 +524,7 @@
                 voiceEnabled: 'Voix activée',
                 testSpeech: 'Un, Deux, Trois',
                 setTime: 'Veuillez définir le temps!',
-                installBtn: '📱 Ajouter à l\'écran d\'accueil',
-                soundEffect: '🔔 Son d\'alarme',
-                testSound: 'Tester le son'
+                installBtn: '📱 Ajouter à l\'écran d\'accueil'
             }
         };
         
@@ -551,8 +537,7 @@
         let time = 0;
         let timerDuration = 60;
         let interval = null;
-        let voiceEnabled = true; // 음성 카운트 기본 켜짐
-        let soundEnabled = true; // 알람 효과음 기본 켜짐
+        let voiceEnabled = true;
         let lastSpoken = -1;
         
         // Elements
@@ -577,46 +562,10 @@
         let voices = [];
         let wakeLock = null;
         
-        // Audio Context for sound effects
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const audioCtx = new AudioContext();
-        
-        // Play beep sound
-        function playBeep(frequency = 800, duration = 200, volume = 0.3) {
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            oscillator.frequency.value = frequency;
-            oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration / 1000);
-            
-            oscillator.start(audioCtx.currentTime);
-            oscillator.stop(audioCtx.currentTime + duration / 1000);
-        }
-        
-        // Play alarm sound (multiple beeps)
-        function playAlarm() {
-            // Resume audio context if suspended (mobile requirement)
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            
-            // Play 4 beeps with increasing pitch
-            playBeep(600, 150, 0.3);
-            setTimeout(() => playBeep(700, 150, 0.3), 200);
-            setTimeout(() => playBeep(800, 150, 0.3), 400);
-            setTimeout(() => playBeep(900, 200, 0.4), 600);
-        }
-        
         // Load voices
         function loadVoices() {
             voices = synth.getVoices();
-            console.log('Loaded voices:', voices.length);
+            console.log('✅ 음성 로드 완료:', voices.length, '개');
             if (voices.length > 0) {
                 populateVoiceList();
             }
@@ -628,105 +577,96 @@
         }
         
         loadVoices();
-        
-        // Fallback retry
-        setTimeout(() => {
-            if (voices.length === 0) {
-                loadVoices();
-            }
-        }, 100);
-        
-        setTimeout(() => {
-            if (voices.length === 0) {
-                loadVoices();
-            }
-        }, 500);
+        setTimeout(loadVoices, 100);
+        setTimeout(loadVoices, 500);
         
         function populateVoiceList() {
             const lang = langSelect.value;
-            let filtered = voices.filter(v => v.lang.startsWith(lang.split('-')[0]));
-            voiceSelect.innerHTML = '';
+            const langCode = lang.split('-')[0]; // ko-KR → ko
             
+            console.log('🔍 언어 선택:', lang, '→ 필터링:', langCode);
+            
+            // 선택된 언어의 음성 필터링
+            let filtered = voices.filter(v => v.lang.startsWith(langCode));
+            console.log('  ├─ 필터된 음성:', filtered.length, '개');
+            
+            // 필터 결과가 없으면 영어로 폴백
             if (filtered.length === 0) {
+                console.log('  ├─ ⚠️ 해당 언어 음성 없음 → 영어로 폴백');
                 filtered = voices.filter(v => v.lang.startsWith('en'));
             }
             
+            // 그래도 없으면 모든 음성 사용
             if (filtered.length === 0) {
-                filtered = voices; // Use all voices as fallback
+                console.log('  ├─ ⚠️ 영어 음성도 없음 → 전체 음성 사용');
+                filtered = voices;
             }
+            
+            // Dropdown 업데이트
+            voiceSelect.innerHTML = '';
             
             if (filtered.length === 0) {
                 const option = document.createElement('option');
                 option.textContent = '음성을 불러오는 중...';
                 voiceSelect.appendChild(option);
+                console.log('  └─ ❌ 사용 가능한 음성 없음');
                 return;
             }
             
             filtered.forEach((voice, i) => {
                 const option = document.createElement('option');
-                option.value = i;
+                option.value = voice.name; // 이름으로 저장
                 option.textContent = voice.name + (voice.localService ? ' 📱' : ' ☁️');
                 voiceSelect.appendChild(option);
             });
+            
+            console.log('  └─ ✅ 음성 목록 업데이트 완료:', filtered.length, '개');
         }
         
+        // 언어 변경 시 UI + 음성 목록 업데이트
         langSelect.addEventListener('change', () => {
-            // Update UI language when voice language changes
-            const langCode = langSelect.value.split('-')[0]; // ko-KR → ko
+            const langCode = langSelect.value.split('-')[0];
             const newLang = i18n[langCode] || i18n.en;
             
-            // Re-initialize UI with new language
-            document.getElementById('mainTitle').textContent = mode === 'timer' ? newLang.titleTimer : newLang.titleStopwatch;
-            document.getElementById('stopwatchBtn').textContent = newLang.stopwatch;
-            document.getElementById('timerBtn').textContent = newLang.timer;
-            document.getElementById('startBtn').textContent = newLang.start;
-            document.getElementById('stopBtn').textContent = newLang.stop;
-            document.getElementById('resetBtn').textContent = newLang.reset;
-            document.getElementById('minutesLabel').textContent = newLang.minutes;
-            document.getElementById('secondsLabel').textContent = newLang.seconds;
-            document.getElementById('voiceCountLabel').textContent = newLang.voiceCount;
-            document.getElementById('testVoiceBtn').textContent = newLang.testVoice;
-            document.getElementById('soundEffectLabel').textContent = newLang.soundEffect;
-            document.getElementById('testSoundBtn').textContent = newLang.testSound;
-            document.getElementById('languageLabel').textContent = newLang.language;
-            document.getElementById('voiceLabel').textContent = newLang.voice;
-            document.getElementById('speedLabel').textContent = newLang.speed;
-            document.getElementById('pitchLabel').textContent = newLang.pitch;
-            document.getElementById('slowLabel').textContent = newLang.slow;
-            document.getElementById('fastLabel').textContent = newLang.fast;
-            document.getElementById('lowLabel').textContent = newLang.low;
-            document.getElementById('highLabel').textContent = newLang.high;
+            console.log('🌐 언어 변경:', langSelect.value);
             
-            // Update global t reference
-            window.currentLang = newLang;
+            // UI 텍스트 업데이트
+            updateUILanguage(newLang);
             
+            // 음성 목록 재생성
             populateVoiceList();
+            
+            // 전역 언어 참조 업데이트
+            window.currentLang = newLang;
         });
         
-        // Initialize UI text
+        // UI 언어 업데이트 함수
+        function updateUILanguage(lang) {
+            document.getElementById('mainTitle').textContent = mode === 'timer' ? lang.titleTimer : lang.titleStopwatch;
+            document.getElementById('stopwatchBtn').textContent = lang.stopwatch;
+            document.getElementById('timerBtn').textContent = lang.timer;
+            document.getElementById('startBtn').textContent = lang.start;
+            document.getElementById('stopBtn').textContent = lang.stop;
+            document.getElementById('resetBtn').textContent = lang.reset;
+            document.getElementById('minutesLabel').textContent = lang.minutes;
+            document.getElementById('secondsLabel').textContent = lang.seconds;
+            document.getElementById('voiceCountLabel').textContent = lang.voiceCount;
+            document.getElementById('testVoiceBtn').textContent = lang.testVoice;
+            document.getElementById('languageLabel').textContent = lang.language;
+            document.getElementById('voiceLabel').textContent = lang.voice;
+            document.getElementById('speedLabel').textContent = lang.speed;
+            document.getElementById('pitchLabel').textContent = lang.pitch;
+            document.getElementById('slowLabel').textContent = lang.slow;
+            document.getElementById('fastLabel').textContent = lang.fast;
+            document.getElementById('lowLabel').textContent = lang.low;
+            document.getElementById('highLabel').textContent = lang.high;
+        }
+        
+        // 초기 UI 설정
         function initializeUI() {
-            document.getElementById('mainTitle').textContent = window.currentLang.titleStopwatch;
-            document.getElementById('stopwatchBtn').textContent = window.currentLang.stopwatch;
-            document.getElementById('timerBtn').textContent = window.currentLang.timer;
-            document.getElementById('startBtn').textContent = window.currentLang.start;
-            document.getElementById('stopBtn').textContent = window.currentLang.stop;
-            document.getElementById('resetBtn').textContent = window.currentLang.reset;
-            document.getElementById('minutesLabel').textContent = window.currentLang.minutes;
-            document.getElementById('secondsLabel').textContent = window.currentLang.seconds;
-            document.getElementById('voiceCountLabel').textContent = window.currentLang.voiceCount;
-            document.getElementById('testVoiceBtn').textContent = window.currentLang.testVoice;
-            document.getElementById('soundEffectLabel').textContent = window.currentLang.soundEffect;
-            document.getElementById('testSoundBtn').textContent = window.currentLang.testSound;
-            document.getElementById('languageLabel').textContent = window.currentLang.language;
-            document.getElementById('voiceLabel').textContent = window.currentLang.voice;
-            document.getElementById('speedLabel').textContent = window.currentLang.speed;
-            document.getElementById('pitchLabel').textContent = window.currentLang.pitch;
-            document.getElementById('slowLabel').textContent = window.currentLang.slow;
-            document.getElementById('fastLabel').textContent = window.currentLang.fast;
-            document.getElementById('lowLabel').textContent = window.currentLang.low;
-            document.getElementById('highLabel').textContent = window.currentLang.high;
+            updateUILanguage(window.currentLang);
             
-            // Auto-select language
+            // 브라우저 언어에 맞는 언어 자동 선택
             const langMap = {
                 'ko': 'ko-KR',
                 'en': 'en-US',
@@ -738,7 +678,7 @@
             };
             langSelect.value = langMap[detectedLang] || 'en-US';
             
-            // Populate voice list after setting language
+            // 음성 목록 초기화
             if (voices.length > 0) {
                 populateVoiceList();
             }
@@ -754,13 +694,20 @@
                 synth.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
                 const lang = langSelect.value;
-                const filtered = voices.filter(v => v.lang.startsWith(lang.split('-')[0]));
-                const voiceIndex = parseInt(voiceSelect.value) || 0;
+                const selectedVoiceName = voiceSelect.value;
                 
-                if (filtered.length > 0) {
-                    utterance.voice = filtered[voiceIndex] || filtered[0];
-                } else if (voices.length > 0) {
-                    utterance.voice = voices[0];
+                // 선택된 음성 찾기
+                const selectedVoice = voices.find(v => v.name === selectedVoiceName);
+                
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                    console.log('🎙️ 음성 사용:', selectedVoice.name);
+                } else {
+                    // 폴백: 언어에 맞는 첫 번째 음성
+                    const langCode = lang.split('-')[0];
+                    const fallback = voices.find(v => v.lang.startsWith(langCode)) || voices[0];
+                    utterance.voice = fallback;
+                    console.log('🎙️ 폴백 음성:', fallback?.name);
                 }
                 
                 utterance.lang = lang;
@@ -768,18 +715,15 @@
                 utterance.pitch = parseFloat(pitchSlider.value);
                 utterance.volume = 1.0;
                 
-                // iOS Safari fix: resume context
                 if (synth.paused) synth.resume();
                 
                 synth.speak(utterance);
                 
-                // Error handling
                 utterance.onerror = (e) => {
-                    console.error('Speech error:', e);
+                    console.error('❌ TTS 오류:', e);
                 };
             } catch (e) {
-                console.error('Speak failed:', e);
-                alert('음성 재생 실패: ' + e.message);
+                console.error('❌ speak() 실패:', e);
             }
         }
         
@@ -801,38 +745,34 @@
                 const seconds = time;
                 
                 if (mode === 'stopwatch') {
-                    // 100까지는 모든 숫자, 그 이후는 5의 배수
                     if (seconds <= 100 || seconds % 5 === 0) {
                         speak(String(seconds));
                     }
                 } else {
-                    // 타이머 모드
+                    // Timer mode
                     if (seconds > 100) {
-                        // 100초 이상: 10초 단위만
                         if (seconds % 10 === 0) {
                             speak(String(seconds));
                         }
                     } else if (seconds > 0) {
-                        // 100초 이하: 모든 숫자
                         speak(String(seconds));
                     } else if (seconds === 0) {
-                        if (soundEnabled) playAlarm();
-                        setTimeout(() => speak(window.currentLang.timeUp), 500);
+                        setTimeout(() => speak(window.currentLang.timeUp), 100);
                         stop();
                     }
                 }
             }
         }
         
-        // Wake Lock (화면 꺼짐 방지)
+        // Wake Lock
         async function requestWakeLock() {
             try {
                 if ('wakeLock' in navigator) {
                     wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('Wake Lock activated');
+                    console.log('🔒 Wake Lock 활성화');
                 }
             } catch (err) {
-                console.log('Wake Lock not supported:', err);
+                console.log('⚠️ Wake Lock 미지원:', err);
             }
         }
         
@@ -840,7 +780,7 @@
             if (wakeLock) {
                 wakeLock.release();
                 wakeLock = null;
-                console.log('Wake Lock released');
+                console.log('🔓 Wake Lock 해제');
             }
         }
         
@@ -850,12 +790,9 @@
                 let m = parseInt(document.getElementById('minutes').value) || 0;
                 let s = parseInt(document.getElementById('seconds').value) || 0;
                 
-                // 초를 분:초로 자동 변환
                 if (s >= 60) {
                     m += Math.floor(s / 60);
                     s = s % 60;
-                    
-                    // 변환된 값을 다시 입력 필드에 표시
                     document.getElementById('minutes').value = m;
                     document.getElementById('seconds').value = s;
                 }
@@ -868,7 +805,6 @@
                 }
             }
             
-            // iOS 음성 초기화 (사용자 액션 시 필요)
             if (voiceEnabled && synth.paused) {
                 synth.resume();
             }
@@ -877,7 +813,6 @@
             startBtn.classList.add('hidden');
             stopBtn.classList.remove('hidden');
             
-            // 화면 꺼짐 방지
             requestWakeLock();
             
             interval = setInterval(() => {
@@ -934,29 +869,15 @@
             voiceEnabled = !voiceEnabled;
             voiceToggle.classList.toggle('active');
             
-            // Test voice when enabled
             if (voiceEnabled) {
-                setTimeout(() => {
-                    speak(window.currentLang.voiceEnabled, true);
-                }, 100);
+                setTimeout(() => speak(window.currentLang.voiceEnabled, true), 100);
             }
         });
         
         // Test voice button
         document.getElementById('testVoiceBtn').addEventListener('click', () => {
+            console.log('🧪 테스트 버튼 클릭');
             speak(window.currentLang.testSpeech, true);
-        });
-        
-        // Sound toggle
-        const soundToggle = document.getElementById('soundToggle');
-        soundToggle.addEventListener('click', () => {
-            soundEnabled = !soundEnabled;
-            soundToggle.classList.toggle('active');
-        });
-        
-        // Test sound button
-        document.getElementById('testSoundBtn').addEventListener('click', () => {
-            playAlarm();
         });
         
         // Sliders
@@ -978,7 +899,6 @@
             if (totalSeconds >= 60) {
                 const m = Math.floor(totalSeconds / 60);
                 const s = totalSeconds % 60;
-                
                 minutesInput.value = m;
                 secondsInput.value = s;
             }
@@ -998,12 +918,11 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registered!', reg))
-                    .catch(err => console.log('Service Worker registration failed:', err));
+                    .then(reg => console.log('✅ Service Worker 등록 완료', reg))
+                    .catch(err => console.log('❌ Service Worker 등록 실패:', err));
             });
         }
         
-        // Install prompt
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -1020,7 +939,7 @@
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
                     const { outcome } = await deferredPrompt.userChoice;
-                    console.log('Install outcome:', outcome);
+                    console.log('설치 결과:', outcome);
                     deferredPrompt = null;
                     installBtn.remove();
                 }
@@ -1028,7 +947,6 @@
             
             document.body.appendChild(installBtn);
             
-            // Auto-hide after 10 seconds
             setTimeout(() => {
                 if (installBtn && installBtn.parentNode) {
                     installBtn.style.opacity = '0';
@@ -1038,9 +956,8 @@
             }, 10000);
         }
         
-        // Installed event
         window.addEventListener('appinstalled', () => {
-            console.log('PWA installed!');
+            console.log('✅ PWA 설치 완료!');
             deferredPrompt = null;
         });
     </script>
