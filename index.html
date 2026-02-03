@@ -550,7 +550,8 @@
             }
         };
         
-        const t = i18n[detectedLang] || i18n.en;
+        // Current language reference (updates when language changes)
+        window.currentLang = i18n[detectedLang] || i18n.en;
         
         // State
         let mode = 'stopwatch';
@@ -677,30 +678,61 @@
             });
         }
         
-        langSelect.addEventListener('change', populateVoiceList);
+        langSelect.addEventListener('change', () => {
+            // Update UI language when voice language changes
+            const langCode = langSelect.value.split('-')[0]; // ko-KR → ko
+            const newLang = i18n[langCode] || i18n.en;
+            
+            // Re-initialize UI with new language
+            document.getElementById('mainTitle').textContent = mode === 'timer' ? newLang.titleTimer : newLang.titleStopwatch;
+            document.getElementById('stopwatchBtn').textContent = newLang.stopwatch;
+            document.getElementById('timerBtn').textContent = newLang.timer;
+            document.getElementById('startBtn').textContent = newLang.start;
+            document.getElementById('stopBtn').textContent = newLang.stop;
+            document.getElementById('resetBtn').textContent = newLang.reset;
+            document.getElementById('minutesLabel').textContent = newLang.minutes;
+            document.getElementById('secondsLabel').textContent = newLang.seconds;
+            document.getElementById('voiceCountLabel').textContent = newLang.voiceCount;
+            document.getElementById('testVoiceBtn').textContent = newLang.testVoice;
+            document.getElementById('soundEffectLabel').textContent = newLang.soundEffect;
+            document.getElementById('testSoundBtn').textContent = newLang.testSound;
+            document.getElementById('languageLabel').textContent = newLang.language;
+            document.getElementById('voiceLabel').textContent = newLang.voice;
+            document.getElementById('speedLabel').textContent = newLang.speed;
+            document.getElementById('pitchLabel').textContent = newLang.pitch;
+            document.getElementById('slowLabel').textContent = newLang.slow;
+            document.getElementById('fastLabel').textContent = newLang.fast;
+            document.getElementById('lowLabel').textContent = newLang.low;
+            document.getElementById('highLabel').textContent = newLang.high;
+            
+            // Update global t reference
+            window.currentLang = newLang;
+            
+            populateVoiceList();
+        });
         
         // Initialize UI text
         function initializeUI() {
-            document.getElementById('mainTitle').textContent = t.titleStopwatch;
-            document.getElementById('stopwatchBtn').textContent = t.stopwatch;
-            document.getElementById('timerBtn').textContent = t.timer;
-            document.getElementById('startBtn').textContent = t.start;
-            document.getElementById('stopBtn').textContent = t.stop;
-            document.getElementById('resetBtn').textContent = t.reset;
-            document.getElementById('minutesLabel').textContent = t.minutes;
-            document.getElementById('secondsLabel').textContent = t.seconds;
-            document.getElementById('voiceCountLabel').textContent = t.voiceCount;
-            document.getElementById('testVoiceBtn').textContent = t.testVoice;
-            document.getElementById('soundEffectLabel').textContent = t.soundEffect;
-            document.getElementById('testSoundBtn').textContent = t.testSound;
-            document.getElementById('languageLabel').textContent = t.language;
-            document.getElementById('voiceLabel').textContent = t.voice;
-            document.getElementById('speedLabel').textContent = t.speed;
-            document.getElementById('pitchLabel').textContent = t.pitch;
-            document.getElementById('slowLabel').textContent = t.slow;
-            document.getElementById('fastLabel').textContent = t.fast;
-            document.getElementById('lowLabel').textContent = t.low;
-            document.getElementById('highLabel').textContent = t.high;
+            document.getElementById('mainTitle').textContent = window.currentLang.titleStopwatch;
+            document.getElementById('stopwatchBtn').textContent = window.currentLang.stopwatch;
+            document.getElementById('timerBtn').textContent = window.currentLang.timer;
+            document.getElementById('startBtn').textContent = window.currentLang.start;
+            document.getElementById('stopBtn').textContent = window.currentLang.stop;
+            document.getElementById('resetBtn').textContent = window.currentLang.reset;
+            document.getElementById('minutesLabel').textContent = window.currentLang.minutes;
+            document.getElementById('secondsLabel').textContent = window.currentLang.seconds;
+            document.getElementById('voiceCountLabel').textContent = window.currentLang.voiceCount;
+            document.getElementById('testVoiceBtn').textContent = window.currentLang.testVoice;
+            document.getElementById('soundEffectLabel').textContent = window.currentLang.soundEffect;
+            document.getElementById('testSoundBtn').textContent = window.currentLang.testSound;
+            document.getElementById('languageLabel').textContent = window.currentLang.language;
+            document.getElementById('voiceLabel').textContent = window.currentLang.voice;
+            document.getElementById('speedLabel').textContent = window.currentLang.speed;
+            document.getElementById('pitchLabel').textContent = window.currentLang.pitch;
+            document.getElementById('slowLabel').textContent = window.currentLang.slow;
+            document.getElementById('fastLabel').textContent = window.currentLang.fast;
+            document.getElementById('lowLabel').textContent = window.currentLang.low;
+            document.getElementById('highLabel').textContent = window.currentLang.high;
             
             // Auto-select language
             const langMap = {
@@ -713,6 +745,11 @@
                 'fr': 'fr-FR'
             };
             langSelect.value = langMap[detectedLang] || 'en-US';
+            
+            // Populate voice list after setting language
+            if (voices.length > 0) {
+                populateVoiceList();
+            }
         }
         
         initializeUI();
@@ -788,7 +825,7 @@
                         speak(String(seconds));
                     } else if (seconds === 0) {
                         if (soundEnabled) playAlarm();
-                        setTimeout(() => speak(t.timeUp), 500);
+                        setTimeout(() => speak(window.currentLang.timeUp), 500);
                         stop();
                     }
                 }
@@ -834,7 +871,7 @@
                 time = m * 60 + s;
                 
                 if (time === 0) {
-                    alert(t.setTime);
+                    alert(window.currentLang.setTime);
                     return;
                 }
             }
@@ -890,10 +927,10 @@
                 
                 if (mode === 'timer') {
                     timerInput.classList.remove('hidden');
-                    mainTitle.textContent = t.titleTimer;
+                    mainTitle.textContent = window.currentLang.titleTimer;
                 } else {
                     timerInput.classList.add('hidden');
-                    mainTitle.textContent = t.titleStopwatch;
+                    mainTitle.textContent = window.currentLang.titleStopwatch;
                 }
                 
                 reset();
@@ -908,14 +945,14 @@
             // Test voice when enabled
             if (voiceEnabled) {
                 setTimeout(() => {
-                    speak(t.voiceEnabled, true);
+                    speak(window.currentLang.voiceEnabled, true);
                 }, 100);
             }
         });
         
         // Test voice button
         document.getElementById('testVoiceBtn').addEventListener('click', () => {
-            speak(t.testSpeech, true);
+            speak(window.currentLang.testSpeech, true);
         });
         
         // Sound toggle
@@ -983,7 +1020,7 @@
         
         function showInstallPromotion() {
             const installBtn = document.createElement('button');
-            installBtn.textContent = t.installBtn;
+            installBtn.textContent = window.currentLang.installBtn;
             installBtn.className = 'btn';
             installBtn.style.cssText = 'position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #4CAF50; color: white; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.4);';
             
