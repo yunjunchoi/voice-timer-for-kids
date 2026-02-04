@@ -11,7 +11,7 @@
             --bg-color: #F0F4F8;
             --text-color: #2D3748;
         }
-
+        
         body {
             font-family: 'Jua', 'Gamja Flower', sans-serif;
             background-color: var(--bg-color);
@@ -26,11 +26,16 @@
             touch-action: manipulation;
         }
 
-        h1 {
-            margin-bottom: 20px;
-            font-size: 2rem;
-            color: #FF6B6B;
+        /* 로고 디자인 복구 및 강화 */
+        h1 { 
+            margin-bottom: 25px; 
+            font-size: 2.2rem; 
+            color: #FF6B6B; 
             text-align: center;
+            text-shadow: 2px 2px 0px #fff;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 10px 20px;
+            border-radius: 20px;
         }
 
         .timer-container {
@@ -39,25 +44,22 @@
             height: 300px;
             margin-bottom: 30px;
         }
-
+        
         .timer-circle {
             transform: rotate(-90deg);
             width: 100%;
             height: 100%;
         }
-
+        
         .timer-circle circle {
             fill: none;
             stroke-width: 15;
             stroke-linecap: round;
         }
-
-        .circle-bg {
-            stroke: #e6e6e6;
-        }
-
-        .circle-progress {
-            stroke: var(--primary-color);
+        
+        .circle-bg { stroke: #e6e6e6; }
+        .circle-progress { 
+            stroke: var(--primary-color); 
             stroke-dasharray: 880;
             stroke-dashoffset: 0;
             transition: stroke-dashoffset 1s linear;
@@ -78,7 +80,7 @@
             flex-direction: column;
             gap: 15px;
             width: 90%;
-            max-width: 320px;
+            max-width: 350px; /* 너비 약간 증가 (긴 음성 이름 대응) */
         }
 
         .input-group {
@@ -96,12 +98,20 @@
             border-radius: 10px;
         }
 
+        /* Select 박스 디자인 */
         select {
             padding: 12px;
             font-size: 1rem;
             border-radius: 10px;
             border: 2px solid #CBD5E0;
             background: white;
+            width: 100%;
+        }
+        
+        /* 옵션 그룹 스타일 (브라우저마다 다를 수 있음) */
+        optgroup {
+            font-weight: bold;
+            color: #4A5568;
         }
 
         button {
@@ -112,33 +122,16 @@
             cursor: pointer;
             font-weight: bold;
             transition: transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+        
+        button:active { transform: scale(0.98); }
+        
+        .btn-start { background-color: #48BB78; color: white; }
+        .btn-stop { background-color: #F56565; color: white; display: none;}
+        .btn-reset { background-color: #ED8936; color: white; display: none;}
 
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .btn-start {
-            background-color: #48BB78;
-            color: white;
-        }
-
-        .btn-stop {
-            background-color: #F56565;
-            color: white;
-            display: none;
-        }
-
-        .btn-reset {
-            background-color: #ED8936;
-            color: white;
-            display: none;
-        }
-
-        .pulse {
-            animation: pulse 1s infinite;
-        }
-
+        .pulse { animation: pulse 1s infinite; }
         @keyframes pulse {
             0% { transform: translate(-50%, -50%) scale(1); }
             50% { transform: translate(-50%, -50%) scale(1.05); }
@@ -147,7 +140,9 @@
     </style>
 </head>
 <body>
-    <h1 id="ui-title">Kids Voice Timer</h1>
+
+    <!-- 로고 영역 -->
+    <h1 id="ui-title">🦊 Kids Voice Timer</h1>
 
     <div class="timer-container">
         <svg class="timer-circle">
@@ -164,27 +159,24 @@
         </div>
 
         <select id="voiceSelect">
-            <option value="default" id="ui-select-default">Language Selection</option>
+            <option value="default" id="ui-select-default">Select Language & Voice</option>
         </select>
 
-        <button class="btn-start" id="btn-start" onclick="startTimer()">Start ▶️</button>
-        <button class="btn-stop" id="btn-stop" onclick="stopTimer()">Pause ⏸️</button>
+        <button class="btn-start" id="btn-start" onclick="startTimer()">Start ▶</button>
+        <button class="btn-stop" id="btn-stop" onclick="stopTimer()">Pause ⏸</button>
         <button class="btn-reset" id="btn-reset" onclick="resetTimer()">Reset ↺</button>
     </div>
 
     <script>
-        /**
-         * 1. 다국어 딕셔너리 (여기서 언어별 문구 관리)
-         * 필요한 언어가 있으면 여기에 추가하면 됩니다.
-         */
+        // 1. 다국어 딕셔너리 (로고 포함)
         const translations = {
             'en': {
-                title: "Kids Voice Timer",
+                title: "🦊 Kids Voice Timer", // 로고 부활
                 min_ph: "min",
                 sec_ph: "sec",
-                btn_start: "Start ▶️",
-                btn_resume: "Resume ▶️",
-                btn_pause: "Pause ⏸️",
+                btn_start: "Start ▶",
+                btn_resume: "Resume ▶",
+                btn_pause: "Pause ⏸",
                 btn_reset: "Reset ↺",
                 done_msg: "Done!",
                 voice_start: "Start",
@@ -195,12 +187,12 @@
                 select_default: "Select Language"
             },
             'ko': {
-                title: "키즈 보이스 타이머",
+                title: "🦊 키즈 보이스 타이머",
                 min_ph: "분",
                 sec_ph: "초",
-                btn_start: "시작하기 ▶️",
-                btn_resume: "이어하기 ▶️",
-                btn_pause: "잠깐 멈춤 ⏸️",
+                btn_start: "시작하기 ▶",
+                btn_resume: "이어하기 ▶",
+                btn_pause: "잠깐 멈춤 ⏸",
                 btn_reset: "처음부터 ↺",
                 done_msg: "끝!",
                 voice_start: "시작",
@@ -211,12 +203,12 @@
                 select_default: "언어 선택 (Language)"
             },
             'ja': {
-                title: "キッズボイスタイマー",
+                title: "🦊 キッズボイスタイマー",
                 min_ph: "分",
                 sec_ph: "秒",
-                btn_start: "スタート ▶️",
-                btn_resume: "再開 ▶️",
-                btn_pause: "一時停止 ⏸️",
+                btn_start: "スタート ▶",
+                btn_resume: "再開 ▶",
+                btn_pause: "一時停止 ⏸",
                 btn_reset: "リセット ↺",
                 done_msg: "終了!",
                 voice_start: "スタート",
@@ -227,12 +219,12 @@
                 select_default: "言語を選択"
             },
             'zh': {
-                title: "儿童语音计时器",
+                title: "🦊 儿童语音计时器",
                 min_ph: "分",
                 sec_ph: "秒",
-                btn_start: "开始 ▶️",
-                btn_resume: "继续 ▶️",
-                btn_pause: "暂停 ⏸️",
+                btn_start: "开始 ▶",
+                btn_resume: "继续 ▶",
+                btn_pause: "暂停 ⏸",
                 btn_reset: "重置 ↺",
                 done_msg: "完成!",
                 voice_start: "开始",
@@ -243,12 +235,12 @@
                 select_default: "选择语言"
             },
             'es': {
-                title: "Temporizador de Voz",
+                title: "🦊 Temporizador de Voz",
                 min_ph: "min",
                 sec_ph: "seg",
-                btn_start: "Iniciar ▶️",
-                btn_resume: "Reanudar ▶️",
-                btn_pause: "Pausa ⏸️",
+                btn_start: "Iniciar ▶",
+                btn_resume: "Reanudar ▶",
+                btn_pause: "Pausa ⏸",
                 btn_reset: "Reiniciar ↺",
                 done_msg: "¡Listo!",
                 voice_start: "Comienzo",
@@ -268,16 +260,14 @@
         let synth = window.speechSynthesis;
         let selectedVoice = null;
         let isRunning = false;
-
-        // 현재 언어 (기본값 영어)
-        let currentLang = 'en';
+        let currentLang = 'en'; 
 
         const display = document.getElementById('display');
         const circleProgress = document.querySelector('.circle-progress');
         const voiceSelect = document.getElementById('voiceSelect');
         const fullDashArray = 880;
 
-        // UI 요소들
+        // UI 요소
         const uiTitle = document.getElementById('ui-title');
         const uiMinInput = document.getElementById('minInput');
         const uiSecInput = document.getElementById('secInput');
@@ -286,102 +276,126 @@
         const uiBtnReset = document.getElementById('btn-reset');
         const uiSelectDefault = document.getElementById('ui-select-default');
 
-        // --- 2. 언어 및 UI 업데이트 로직 ---
+        // UI 업데이트
         function updateUIText(langCode) {
-            // 지원하지 않는 언어면 영어로 폴백
             const langData = translations[langCode] || translations['en'];
-
-            // 페이지 언어 속성 변경
+            
             document.documentElement.lang = langCode;
             currentLang = langCode;
 
-            // 텍스트 교체
-            uiTitle.textContent = langData.title;
+            uiTitle.textContent = langData.title; // 로고(이모지) 포함 텍스트
             uiMinInput.placeholder = langData.min_ph;
             uiSecInput.placeholder = langData.sec_ph;
             uiSelectDefault.textContent = langData.select_default;
 
-            // 버튼 상태에 따라 텍스트 갱신
             if(isRunning) {
-                // 실행 중일 땐 Pause 버튼만 보임
                 uiBtnStop.textContent = langData.btn_pause;
             } else {
-                // 멈춰있을 때
                 if(remainingSeconds > 0 && remainingSeconds < totalSeconds) {
                     uiBtnStart.textContent = langData.btn_resume;
                 } else {
                     uiBtnStart.textContent = langData.btn_start;
                 }
             }
-
             uiBtnReset.textContent = langData.btn_reset;
         }
 
-        // 초기화 시 영어 적용
         updateUIText('en');
 
-        // --- 3. 음성 목록 로딩 ---
+        // --- 2. 개선된 음성 목록 로딩 (국가별 그룹화) ---
         function populateVoiceList() {
             let voices = synth.getVoices();
-
-            // 기존 옵션 지우고 기본값 다시 추가
+            
             voiceSelect.innerHTML = '';
             voiceSelect.appendChild(uiSelectDefault);
 
             if (voices.length > 0) {
-                // 언어별 정렬 (영어를 위로, 그다음 가나다순)
-                voices.sort((a, b) => {
-                    const aEn = a.lang.startsWith('en');
-                    const bEn = b.lang.startsWith('en');
-                    if (aEn && !bEn) return -1;
-                    if (!aEn && bEn) return 1;
-                    return a.lang.localeCompare(b.lang);
-                });
+                // 1. 그룹핑을 위한 맵 생성
+                const groups = {};
+                // 언어 이름 변환기 (Intl API 활용)
+                const langNames = new Intl.DisplayNames(['en'], { type: 'language' });
 
                 voices.forEach((voice, index) => {
-                    const option = document.createElement('option');
-                    // UI에 보여질 이름: "Google US English (en-US)"
-                    option.textContent = `${voice.name} (${voice.lang})`;
-                    option.value = index;
+                    const langCode = voice.lang; 
+                    const baseLang = langCode.split('-')[0]; // en, ko, ja...
+                    
+                    // 그룹 이름 결정 (예: Korean, English, Japanese...)
+                    let groupName;
+                    try {
+                        groupName = langNames.of(baseLang); 
+                    } catch(e) {
+                        groupName = baseLang; // 실패 시 코드 사용
+                    }
 
-                    // 언어 코드 추출 (ex: ko-KR -> ko)
-                    const langCode = voice.lang.split('-')[0];
-                    option.setAttribute('data-lang', langCode);
+                    if(!groups[groupName]) groups[groupName] = [];
+                    
+                    // 그룹에 음성 정보 추가 (원래 인덱스 유지 중요!)
+                    groups[groupName].push({
+                        name: voice.name,
+                        lang: voice.lang,
+                        index: index // 원래 배열의 인덱스 저장
+                    });
+                });
 
-                    voiceSelect.appendChild(option);
+                // 2. 그룹 정렬 (한국어, 영어를 맨 위로)
+                const sortedGroupKeys = Object.keys(groups).sort((a, b) => {
+                    // 우선순위 정의
+                    const priority = ['Korean', 'English']; 
+                    const idxA = priority.indexOf(a);
+                    const idxB = priority.indexOf(b);
+
+                    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                    if (idxA !== -1) return -1;
+                    if (idxB !== -1) return 1;
+                    return a.localeCompare(b);
+                });
+
+                // 3. DOM 생성
+                sortedGroupKeys.forEach(groupKey => {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = groupKey; // 상위 그룹 이름 (국가/언어)
+
+                    groups[groupKey].forEach(v => {
+                        const option = document.createElement('option');
+                        option.textContent = v.name; // 하위: 세부 음성 이름
+                        option.value = v.index; // 값은 원래 인덱스 사용
+                        option.setAttribute('data-lang', v.lang);
+                        optgroup.appendChild(option);
+                    });
+
+                    voiceSelect.appendChild(optgroup);
                 });
             }
         }
 
         populateVoiceList();
-
         if (speechSynthesis.onvoiceschanged !== undefined) {
             speechSynthesis.onvoiceschanged = populateVoiceList;
         }
 
-        // 음성 선택 시 이벤트 리스너
+        // 음성 선택 핸들러
         voiceSelect.addEventListener('change', () => {
             const index = voiceSelect.value;
+            
             if (index === 'default') {
                 selectedVoice = null;
-                updateUIText('en'); // 선택 해제 시 영어로 복귀
+                updateUIText('en');
             } else {
                 const voices = synth.getVoices();
-                selectedVoice = voices[index];
+                // value에 저장된 원래 인덱스로 음성 찾기
+                selectedVoice = voices[index]; 
+                
                 if (selectedVoice) {
-                    // 선택된 음성의 언어 코드 (ko, en, ja...) 추출
                     const langCode = selectedVoice.lang.split('-')[0];
-                    // 해당 언어로 UI 전체 변경
                     updateUIText(langCode);
                 }
             }
         });
 
-        // --- 4. 타이머 기능 ---
+        // --- 타이머 로직 (기존 동일) ---
         async function startTimer() {
             if (isRunning) return;
 
-            // 처음 시작일 때 시간 설정
             if (remainingSeconds === 0) {
                 const min = parseInt(uiMinInput.value) || 0;
                 const sec = parseInt(uiSecInput.value) || 0;
@@ -389,34 +403,26 @@
                 remainingSeconds = totalSeconds;
             }
 
-            if (totalSeconds <= 0) {
-                alert("Set some time first!");
-                return;
-            }
+            if (totalSeconds <= 0) return alert("Time?");
 
-            // UI 변경
             uiBtnStart.style.display = 'none';
             uiBtnStop.style.display = 'block';
             uiBtnReset.style.display = 'none';
             document.getElementById('inputArea').style.display = 'none';
             voiceSelect.style.display = 'none';
 
-            isRunning = true;
-
-            // 음성으로 시작 알림
             const langData = translations[currentLang] || translations['en'];
+            uiBtnStop.textContent = langData.btn_pause;
+
+            isRunning = true;
             speak(langData.voice_start);
 
-            // 화면 꺼짐 방지
             try {
                 wakeLock = await navigator.wakeLock.request('screen');
-            } catch (err) {
-                console.log('Wake Lock failed:', err);
-            }
+            } catch (err) { console.log('WakeLock error:', err); }
 
             const startTime = Date.now();
             const initialRemaining = remainingSeconds;
-
             updateDisplay();
 
             timerInterval = setInterval(() => {
@@ -437,16 +443,17 @@
 
         function stopTimer() {
             if (!isRunning) return;
-
             clearInterval(timerInterval);
             isRunning = false;
-
+            
             const langData = translations[currentLang] || translations['en'];
+            
             uiBtnStart.textContent = langData.btn_resume;
             uiBtnStart.style.display = 'block';
             uiBtnStop.style.display = 'none';
+            uiBtnReset.textContent = langData.btn_reset;
             uiBtnReset.style.display = 'block';
-
+            
             if (wakeLock) {
                 wakeLock.release().then(() => wakeLock = null);
             }
@@ -456,17 +463,18 @@
             stopTimer();
             remainingSeconds = 0;
             totalSeconds = 0;
-
+            
             const langData = translations[currentLang] || translations['en'];
+
             uiBtnStart.textContent = langData.btn_start;
             uiBtnStart.style.display = 'block';
             uiBtnStop.style.display = 'none';
             uiBtnReset.style.display = 'none';
             document.getElementById('inputArea').style.display = 'flex';
             voiceSelect.style.display = 'block';
+            
             display.classList.remove('pulse');
             display.style.color = '#4A5568';
-
             display.textContent = "00:00";
             circleProgress.style.strokeDashoffset = 0;
         }
@@ -475,14 +483,15 @@
             stopTimer();
             remainingSeconds = 0;
             updateDisplay();
-
+            
             const langData = translations[currentLang] || translations['en'];
+
             display.textContent = langData.done_msg;
             display.classList.add('pulse');
             display.style.color = '#F56565';
-
+            
             speak(langData.voice_done);
-
+            
             uiBtnStart.style.display = 'none';
             uiBtnReset.style.display = 'block';
         }
@@ -501,19 +510,21 @@
 
         function checkAnnounce(seconds) {
             if (seconds <= 0) return;
-
+            
             const langData = translations[currentLang] || translations['en'];
             let msg = "";
 
-            if (seconds === 60) {
+            if (seconds > 60 && seconds % 60 === 0) {
+                msg = langData.voice_xmin.replace('{m}', seconds / 60);
+            } 
+            else if (seconds === 60) {
                 msg = langData.voice_1min;
-            } else if (seconds === 30) {
+            } 
+            else if (seconds === 30) {
                 msg = langData.voice_30sec;
-            } else if (seconds > 60 && seconds % 60 === 0) {
-                const minutes = Math.floor(seconds / 60);
-                msg = langData.voice_xmin.replace('{m}', minutes);
-            } else if (seconds <= 10 && seconds > 0) {
-                msg = String(seconds);
+            } 
+            else if (seconds <= 10) {
+                msg = `${seconds}`;
             }
 
             if (msg) speak(msg);
@@ -521,16 +532,17 @@
 
         function speak(text) {
             synth.cancel();
-
             const utterance = new SpeechSynthesisUtterance(text);
-
+            
             if (selectedVoice) {
                 utterance.voice = selectedVoice;
+                utterance.lang = selectedVoice.lang;
+            } else {
+                utterance.lang = 'en-US';
             }
-
+            
             utterance.rate = 1.0;
             utterance.pitch = 1.1;
-
             synth.speak(utterance);
         }
     </script>
