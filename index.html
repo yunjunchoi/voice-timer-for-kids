@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en"> <!-- 기본 언어는 영어로 시작 -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes"> <!-- iOS 전체화면 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Kids Voice Timer</title>
     <style>
-        /* 1. 아이들을 위한 직관적이고 깔끔한 디자인 (CSS) */
         :root {
             --primary-color: #FF9F1C;
             --bg-color: #F0F4F8;
@@ -14,7 +13,7 @@
         }
 
         body {
-            font-family: 'Jua', 'Gamja Flower', sans-serif; /* 귀여운 폰트 계열 (시스템에 없으면 고딕) */
+            font-family: 'Jua', 'Gamja Flower', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             display: flex;
@@ -33,7 +32,6 @@
             color: #FF6B6B;
         }
 
-        /* 타이머 시각화 (원형 프로그레스) */
         .timer-container {
             position: relative;
             width: 300px;
@@ -59,7 +57,7 @@
 
         .circle-progress {
             stroke: var(--primary-color);
-            stroke-dasharray: 880; /* 2 * PI * R (approx) */
+            stroke-dasharray: 880;
             stroke-dashoffset: 0;
             transition: stroke-dashoffset 1s linear;
         }
@@ -74,7 +72,6 @@
             color: #4A5568;
         }
 
-        /* 컨트롤 패널 */
         .controls {
             display: flex;
             flex-direction: column;
@@ -137,7 +134,6 @@
             display: none;
         }
 
-        /* 애니메이션 효과 */
         .pulse {
             animation: pulse 1s infinite;
         }
@@ -150,7 +146,7 @@
     </style>
 </head>
 <body>
-    <h1>🦊 키즈 보이스 타이머</h1>
+    <h1>🦊 Kids Voice Timer</h1>
 
     <div class="timer-container">
         <svg class="timer-circle">
@@ -162,22 +158,22 @@
 
     <div class="controls">
         <div class="input-group" id="inputArea">
-            <input type="number" id="minInput" placeholder="분" min="0" max="60" value="1">
-            <input type="number" id="secInput" placeholder="초" min="0" max="59" value="0">
+            <input type="number" id="minInput" placeholder="min" min="0" max="60" value="1">
+            <input type="number" id="secInput" placeholder="sec" min="0" max="59" value="0">
         </div>
 
-        <!-- 2. 안드로이드 호환성을 위한 음성 선택기 -->
+        <!-- 언어/음성 선택 -->
         <select id="voiceSelect">
-            <option value="default">기기 기본 음성 (로딩중...)</option>
+            <!-- 4) 언어 선택 표시 -->
+            <option value="default">언어 선택 (Language)</option>
         </select>
 
-        <button class="btn-start" onclick="startTimer()">시작하기 ▶️</button>
-        <button class="btn-stop" onclick="stopTimer()">멈추기 ⏸️</button>
-        <button class="btn-reset" onclick="resetTimer()">다시하기 ↺</button>
+        <button class="btn-start" onclick="startTimer()">Start ▶️</button>
+        <button class="btn-stop" onclick="stopTimer()">Pause ⏸️</button>
+        <button class="btn-reset" onclick="resetTimer()">Reset ↺</button>
     </div>
 
     <script>
-        // --- 3. 변수 및 상태 관리 ---
         let timerInterval;
         let totalSeconds = 0;
         let remainingSeconds = 0;
@@ -185,64 +181,81 @@
         let synth = window.speechSynthesis;
         let selectedVoice = null;
         let isRunning = false;
+        let currentLangCode = 'en'; // 기본 언어는 영어
 
         const display = document.getElementById('display');
         const circleProgress = document.querySelector('.circle-progress');
         const voiceSelect = document.getElementById('voiceSelect');
-
-        // 원형 그래프 둘레 길이 (2 * PI * 140 ≈ 880)
         const fullDashArray = 880;
 
-        // --- 4. 음성 로딩 (안드로이드 이슈 해결 핵심) ---
+        // 2) html lang 동적으로 변경
+        function setPageLanguage(langCode) {
+            document.documentElement.setAttribute('lang', langCode);
+            currentLangCode = langCode.split('-')[0]; // en-US -> en, ko-KR -> ko
+        }
+
+        // 1) 기본 언어는 영어
+        setPageLanguage('en');
+
         function populateVoiceList() {
             let voices = synth.getVoices();
-            // 안드로이드 크롬은 getVoices가 빈 배열일 때가 많으므로 재시도 로직이 필요할 수 있으나
-            // onvoiceschanged 이벤트로 처리하는 것이 정석입니다.
-
             voiceSelect.innerHTML = '';
 
-            // "기본값" 옵션 추가 (목록 로딩 실패 대비)
-            const defaultOption = document.createElement('option');
-            defaultOption.textContent = '기기 기본 음성 (권장)';
-            defaultOption.value = 'default';
-            voiceSelect.appendChild(defaultOption);
+            const labelOption = document.createElement('option');
+            labelOption.textContent = '언어 선택 (Language)';
+            labelOption.value = 'default';
+            voiceSelect.appendChild(labelOption);
 
-            if(voices.length > 0) {
-                // 한국어 우선 정렬
+            if (voices.length > 0) {
                 voices.sort((a, b) => {
-                    const aKor = a.lang.includes('ko');
-                    const bKor = b.lang.includes('ko');
-                    if (aKor && !bKor) return -1;
-                    if (!aKor && bKor) return 1;
-                    return 0;
+                    const aEn = a.lang.startsWith('en');
+                    const bEn = b.lang.startsWith('en');
+                    if (aEn && !bEn) return -1;
+                    if (!aEn && bEn) return 1;
+                    return a.lang.localeCompare(b.lang);
                 });
 
                 voices.forEach((voice, index) => {
                     const option = document.createElement('option');
                     option.textContent = `${voice.name} (${voice.lang})`;
                     option.value = index;
+                    option.setAttribute('data-lang', voice.lang);
 
-                    // 한국어 음성이면 기본 선택
-                    if (voice.lang.includes('ko-KR') && !selectedVoice) {
+                    // 기본은 영어 음성을 우선 선택
+                    if (voice.lang.startsWith('en') && voiceSelect.value === 'default') {
                         option.selected = true;
+                        setPageLanguage(voice.lang); // 페이지 language도 영어 계열로
                     }
                     voiceSelect.appendChild(option);
                 });
             }
+
+            // 언어 선택이 변경될 때마다 페이지 lang도 변경
+            voiceSelect.addEventListener('change', () => {
+                const value = voiceSelect.value;
+                if (value === 'default') {
+                    setPageLanguage('en');
+                    selectedVoice = null;
+                } else {
+                    const voices = synth.getVoices();
+                    const v = voices[value];
+                    if (v) {
+                        selectedVoice = v;
+                        setPageLanguage(v.lang);
+                    }
+                }
+            });
         }
 
         populateVoiceList();
 
-        // 크롬/안드로이드에서 음성 목록이 늦게 로드될 때 실행됨
         if (speechSynthesis.onvoiceschanged !== undefined) {
             speechSynthesis.onvoiceschanged = populateVoiceList;
         }
 
-        // --- 5. 타이머 로직 (Drift 보정 적용) ---
         async function startTimer() {
             if (isRunning) return;
 
-            // 시간 설정 (최초 시작 시에만)
             if (remainingSeconds === 0) {
                 const min = parseInt(document.getElementById('minInput').value) || 0;
                 const sec = parseInt(document.getElementById('secInput').value) || 0;
@@ -250,9 +263,8 @@
                 remainingSeconds = totalSeconds;
             }
 
-            if (totalSeconds <= 0) return alert("시간을 설정해주세요!");
+            if (totalSeconds <= 0) return alert("Set some time first!");
 
-            // UI 변경
             document.querySelector('.btn-start').style.display = 'none';
             document.querySelector('.btn-stop').style.display = 'block';
             document.querySelector('.btn-reset').style.display = 'none';
@@ -261,30 +273,29 @@
 
             isRunning = true;
 
-            // 음성 설정 확인
             const voiceIndex = voiceSelect.value;
             const voices = synth.getVoices();
             if (voiceIndex !== 'default' && voices[voiceIndex]) {
                 selectedVoice = voices[voiceIndex];
+                setPageLanguage(selectedVoice.lang);
             } else {
-                selectedVoice = null; // null이면 브라우저 기본값 사용
+                selectedVoice = null;
+                setPageLanguage('en');
             }
 
-            speak("타이머를 시작합니다.");
+            // 3) 시작 멘트도 언어별로
+            speakStartMessage();
 
-            // 6. 화면 꺼짐 방지 (Wake Lock API)
             try {
                 wakeLock = await navigator.wakeLock.request('screen');
-                console.log('화면 꺼짐 방지 활성화');
             } catch (err) {
-                console.log('Wake Lock 실패:', err);
+                console.log('Wake Lock failed:', err);
             }
 
-            // 정확한 타이머를 위해 Date.now() 활용
             const startTime = Date.now();
-            const initialRemaining = remainingSeconds; // 재시작 시점의 남은 시간
+            const initialRemaining = remainingSeconds;
 
-            updateDisplay(); // 즉시 갱신
+            updateDisplay();
 
             timerInterval = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -299,7 +310,7 @@
                         finishTimer();
                     }
                 }
-            }, 200); // 1초보다 짧게 체크하여 딜레이 방지
+            }, 200);
         }
 
         function stopTimer() {
@@ -308,8 +319,7 @@
             clearInterval(timerInterval);
             isRunning = false;
 
-            // UI 변경
-            document.querySelector('.btn-start').textContent = '이어하기 ▶️';
+            document.querySelector('.btn-start').textContent = 'Resume ▶️';
             document.querySelector('.btn-start').style.display = 'block';
             document.querySelector('.btn-stop').style.display = 'none';
             document.querySelector('.btn-reset').style.display = 'block';
@@ -324,8 +334,7 @@
             remainingSeconds = 0;
             totalSeconds = 0;
 
-            // UI 초기화
-            document.querySelector('.btn-start').textContent = '시작하기 ▶️';
+            document.querySelector('.btn-start').textContent = 'Start ▶️';
             document.querySelector('.btn-start').style.display = 'block';
             document.querySelector('.btn-stop').style.display = 'none';
             document.querySelector('.btn-reset').style.display = 'none';
@@ -336,6 +345,9 @@
 
             display.textContent = "00:00";
             circleProgress.style.strokeDashoffset = 0;
+
+            // 리셋 시 기본 언어 다시 영어
+            setPageLanguage('en');
         }
 
         function finishTimer() {
@@ -343,64 +355,104 @@
             remainingSeconds = 0;
             updateDisplay();
 
-            display.textContent = "끝!";
+            display.textContent = "Done!";
             document.getElementById('display').classList.add('pulse');
-            document.getElementById('display').style.color = '#F56565'; // 빨간색 강조
+            document.getElementById('display').style.color = '#F56565';
 
-            speak("시간이 종료되었습니다! 참 잘했어요.");
+            speakFinishMessage();
 
-            // 종료 UI 처리
             document.querySelector('.btn-start').style.display = 'none';
             document.querySelector('.btn-reset').style.display = 'block';
         }
 
         function updateDisplay() {
-            const min = Math.floor(remainingSeconds / 60);
-            const sec = remainingSeconds % 60;
+            const min = Math.floor(Math.max(remainingSeconds, 0) / 60);
+            const sec = Math.max(remainingSeconds, 0) % 60;
             display.textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 
-            // 원형 그래프 업데이트
             if (totalSeconds > 0) {
-                const offset = fullDashArray - (remainingSeconds / totalSeconds) * fullDashArray;
+                const clamped = Math.max(0, Math.min(remainingSeconds, totalSeconds));
+                const offset = fullDashArray - (clamped / totalSeconds) * fullDashArray;
                 circleProgress.style.strokeDashoffset = offset;
             }
         }
 
-        // --- 7. 음성 안내 로직 ---
         function checkAnnounce(seconds) {
+            if (seconds <= 0) return;
+
             let msg = "";
 
-            // 1분 이상일 때 매 분마다 알림
             if (seconds > 60 && seconds % 60 === 0) {
-                msg = `${seconds / 60}분 남았습니다.`;
-            }
-            // 1분, 30초 알림
-            else if (seconds === 60) {
-                msg = "1분 남았습니다.";
-            } else if (seconds === 30) {
-                msg = "30초 남았습니다.";
-            }
-            // 마지막 10초 카운트다운
-            else if (seconds <= 10 && seconds > 0) {
-                msg = `${seconds}`;
+                msg = buildRemainingMessage(seconds);
+            } else if (seconds === 60 || seconds === 30) {
+                msg = buildRemainingMessage(seconds);
+            } else if (seconds <= 10 && seconds > 0) {
+                msg = buildCountdownMessage(seconds);
             }
 
             if (msg) speak(msg);
         }
 
+        // 3) 언어별 멘트 생성
+        function buildRemainingMessage(seconds) {
+            const minutes = Math.floor(seconds / 60);
+
+            if (currentLangCode === 'ko') {
+                if (seconds === 60) return '1분 남았습니다.';
+                if (seconds === 30) return '30초 남았습니다.';
+                return `${minutes}분 남았습니다.`;
+            } else if (currentLangCode === 'en') {
+                if (seconds === 60) return 'One minute left.';
+                if (seconds === 30) return 'Thirty seconds left.';
+                return `${minutes} minutes left.`;
+            } else {
+                if (seconds === 60) return '1 minute remaining.';
+                if (seconds === 30) return '30 seconds remaining.';
+                return `${minutes} minutes remaining.`;
+            }
+        }
+
+        function buildCountdownMessage(seconds) {
+            if (currentLangCode === 'ko') {
+                return `${seconds}`;
+            } else if (currentLangCode === 'en') {
+                return `${seconds}`;
+            } else {
+                return `${seconds}`;
+            }
+        }
+
+        function speakStartMessage() {
+            if (currentLangCode === 'ko') {
+                speak('타이머를 시작합니다.');
+            } else if (currentLangCode === 'en') {
+                speak('Timer starts now.');
+            } else {
+                speak('The timer has started.');
+            }
+        }
+
+        function speakFinishMessage() {
+            if (currentLangCode === 'ko') {
+                speak('시간이 종료되었습니다. 잘했어요!');
+            } else if (currentLangCode === 'en') {
+                speak("Time's up! Great job!");
+            } else {
+                speak('Timer finished. Well done!');
+            }
+        }
+
         function speak(text) {
-            // 진행 중인 음성 취소 (겹침 방지)
             synth.cancel();
 
             const utterance = new SpeechSynthesisUtterance(text);
 
-            // 선택된 음성 적용 (없으면 기본값)
             if (selectedVoice) {
                 utterance.voice = selectedVoice;
             }
 
-            utterance.rate = 1.0; // 속도
-            utterance.pitch = 1.1; // 아이들을 위해 약간 높은 톤
+            utterance.rate = 1.0;
+            utterance.pitch = 1.1;
 
             synth.speak(utterance);
         }
