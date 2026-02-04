@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"> <!-- 기본 언어는 영어로 시작 -->
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -30,6 +30,7 @@
             margin-bottom: 20px;
             font-size: 2rem;
             color: #FF6B6B;
+            text-align: center;
         }
 
         .timer-container {
@@ -146,7 +147,7 @@
     </style>
 </head>
 <body>
-    <h1>🦊 Kids Voice Timer</h1>
+    <h1 id="ui-title">Kids Voice Timer</h1>
 
     <div class="timer-container">
         <svg class="timer-circle">
@@ -162,18 +163,104 @@
             <input type="number" id="secInput" placeholder="sec" min="0" max="59" value="0">
         </div>
 
-        <!-- 언어/음성 선택 -->
         <select id="voiceSelect">
-            <!-- 4) 언어 선택 표시 -->
-            <option value="default">언어 선택 (Language)</option>
+            <option value="default" id="ui-select-default">Language Selection</option>
         </select>
 
-        <button class="btn-start" onclick="startTimer()">Start ▶️</button>
-        <button class="btn-stop" onclick="stopTimer()">Pause ⏸️</button>
-        <button class="btn-reset" onclick="resetTimer()">Reset ↺</button>
+        <button class="btn-start" id="btn-start" onclick="startTimer()">Start ▶️</button>
+        <button class="btn-stop" id="btn-stop" onclick="stopTimer()">Pause ⏸️</button>
+        <button class="btn-reset" id="btn-reset" onclick="resetTimer()">Reset ↺</button>
     </div>
 
     <script>
+        /**
+         * 1. 다국어 딕셔너리 (여기서 언어별 문구 관리)
+         * 필요한 언어가 있으면 여기에 추가하면 됩니다.
+         */
+        const translations = {
+            'en': {
+                title: "Kids Voice Timer",
+                min_ph: "min",
+                sec_ph: "sec",
+                btn_start: "Start ▶️",
+                btn_resume: "Resume ▶️",
+                btn_pause: "Pause ⏸️",
+                btn_reset: "Reset ↺",
+                done_msg: "Done!",
+                voice_start: "Start",
+                voice_done: "Time is up! Good job.",
+                voice_1min: "One minute left.",
+                voice_30sec: "Thirty seconds left.",
+                voice_xmin: "{m} minutes left.",
+                select_default: "Select Language"
+            },
+            'ko': {
+                title: "키즈 보이스 타이머",
+                min_ph: "분",
+                sec_ph: "초",
+                btn_start: "시작하기 ▶️",
+                btn_resume: "이어하기 ▶️",
+                btn_pause: "잠깐 멈춤 ⏸️",
+                btn_reset: "처음부터 ↺",
+                done_msg: "끝!",
+                voice_start: "시작",
+                voice_done: "시간이 종료되었습니다! 참 잘했어요.",
+                voice_1min: "1분 남았습니다.",
+                voice_30sec: "30초 남았습니다.",
+                voice_xmin: "{m}분 남았습니다.",
+                select_default: "언어 선택 (Language)"
+            },
+            'ja': {
+                title: "キッズボイスタイマー",
+                min_ph: "分",
+                sec_ph: "秒",
+                btn_start: "スタート ▶️",
+                btn_resume: "再開 ▶️",
+                btn_pause: "一時停止 ⏸️",
+                btn_reset: "リセット ↺",
+                done_msg: "終了!",
+                voice_start: "スタート",
+                voice_done: "時間です！よくできました。",
+                voice_1min: "あと1分です。",
+                voice_30sec: "あと30秒です。",
+                voice_xmin: "あと{m}分です。",
+                select_default: "言語を選択"
+            },
+            'zh': {
+                title: "儿童语音计时器",
+                min_ph: "分",
+                sec_ph: "秒",
+                btn_start: "开始 ▶️",
+                btn_resume: "继续 ▶️",
+                btn_pause: "暂停 ⏸️",
+                btn_reset: "重置 ↺",
+                done_msg: "完成!",
+                voice_start: "开始",
+                voice_done: "时间到了！做得好。",
+                voice_1min: "还剩1分钟。",
+                voice_30sec: "还剩30秒。",
+                voice_xmin: "还剩{m}分钟。",
+                select_default: "选择语言"
+            },
+            'es': {
+                title: "Temporizador de Voz",
+                min_ph: "min",
+                sec_ph: "seg",
+                btn_start: "Iniciar ▶️",
+                btn_resume: "Reanudar ▶️",
+                btn_pause: "Pausa ⏸️",
+                btn_reset: "Reiniciar ↺",
+                done_msg: "¡Listo!",
+                voice_start: "Comienzo",
+                voice_done: "¡Se acabó el tiempo! Muy bien.",
+                voice_1min: "Queda un minuto.",
+                voice_30sec: "Quedan treinta segundos.",
+                voice_xmin: "Quedan {m} minutos.",
+                select_default: "Seleccionar idioma"
+            }
+        };
+
+        // 전역 상태
         let timerInterval;
         let totalSeconds = 0;
         let remainingSeconds = 0;
@@ -181,32 +268,68 @@
         let synth = window.speechSynthesis;
         let selectedVoice = null;
         let isRunning = false;
-        let currentLangCode = 'en'; // 기본 언어는 영어
+
+        // 현재 언어 (기본값 영어)
+        let currentLang = 'en';
 
         const display = document.getElementById('display');
         const circleProgress = document.querySelector('.circle-progress');
         const voiceSelect = document.getElementById('voiceSelect');
         const fullDashArray = 880;
 
-        // 2) html lang 동적으로 변경
-        function setPageLanguage(langCode) {
-            document.documentElement.setAttribute('lang', langCode);
-            currentLangCode = langCode.split('-')[0]; // en-US -> en, ko-KR -> ko
+        // UI 요소들
+        const uiTitle = document.getElementById('ui-title');
+        const uiMinInput = document.getElementById('minInput');
+        const uiSecInput = document.getElementById('secInput');
+        const uiBtnStart = document.getElementById('btn-start');
+        const uiBtnStop = document.getElementById('btn-stop');
+        const uiBtnReset = document.getElementById('btn-reset');
+        const uiSelectDefault = document.getElementById('ui-select-default');
+
+        // --- 2. 언어 및 UI 업데이트 로직 ---
+        function updateUIText(langCode) {
+            // 지원하지 않는 언어면 영어로 폴백
+            const langData = translations[langCode] || translations['en'];
+
+            // 페이지 언어 속성 변경
+            document.documentElement.lang = langCode;
+            currentLang = langCode;
+
+            // 텍스트 교체
+            uiTitle.textContent = langData.title;
+            uiMinInput.placeholder = langData.min_ph;
+            uiSecInput.placeholder = langData.sec_ph;
+            uiSelectDefault.textContent = langData.select_default;
+
+            // 버튼 상태에 따라 텍스트 갱신
+            if(isRunning) {
+                // 실행 중일 땐 Pause 버튼만 보임
+                uiBtnStop.textContent = langData.btn_pause;
+            } else {
+                // 멈춰있을 때
+                if(remainingSeconds > 0 && remainingSeconds < totalSeconds) {
+                    uiBtnStart.textContent = langData.btn_resume;
+                } else {
+                    uiBtnStart.textContent = langData.btn_start;
+                }
+            }
+
+            uiBtnReset.textContent = langData.btn_reset;
         }
 
-        // 1) 기본 언어는 영어
-        setPageLanguage('en');
+        // 초기화 시 영어 적용
+        updateUIText('en');
 
+        // --- 3. 음성 목록 로딩 ---
         function populateVoiceList() {
             let voices = synth.getVoices();
-            voiceSelect.innerHTML = '';
 
-            const labelOption = document.createElement('option');
-            labelOption.textContent = '언어 선택 (Language)';
-            labelOption.value = 'default';
-            voiceSelect.appendChild(labelOption);
+            // 기존 옵션 지우고 기본값 다시 추가
+            voiceSelect.innerHTML = '';
+            voiceSelect.appendChild(uiSelectDefault);
 
             if (voices.length > 0) {
+                // 언어별 정렬 (영어를 위로, 그다음 가나다순)
                 voices.sort((a, b) => {
                     const aEn = a.lang.startsWith('en');
                     const bEn = b.lang.startsWith('en');
@@ -217,34 +340,17 @@
 
                 voices.forEach((voice, index) => {
                     const option = document.createElement('option');
+                    // UI에 보여질 이름: "Google US English (en-US)"
                     option.textContent = `${voice.name} (${voice.lang})`;
                     option.value = index;
-                    option.setAttribute('data-lang', voice.lang);
 
-                    // 기본은 영어 음성을 우선 선택
-                    if (voice.lang.startsWith('en') && voiceSelect.value === 'default') {
-                        option.selected = true;
-                        setPageLanguage(voice.lang); // 페이지 language도 영어 계열로
-                    }
+                    // 언어 코드 추출 (ex: ko-KR -> ko)
+                    const langCode = voice.lang.split('-')[0];
+                    option.setAttribute('data-lang', langCode);
+
                     voiceSelect.appendChild(option);
                 });
             }
-
-            // 언어 선택이 변경될 때마다 페이지 lang도 변경
-            voiceSelect.addEventListener('change', () => {
-                const value = voiceSelect.value;
-                if (value === 'default') {
-                    setPageLanguage('en');
-                    selectedVoice = null;
-                } else {
-                    const voices = synth.getVoices();
-                    const v = voices[value];
-                    if (v) {
-                        selectedVoice = v;
-                        setPageLanguage(v.lang);
-                    }
-                }
-            });
         }
 
         populateVoiceList();
@@ -253,39 +359,55 @@
             speechSynthesis.onvoiceschanged = populateVoiceList;
         }
 
+        // 음성 선택 시 이벤트 리스너
+        voiceSelect.addEventListener('change', () => {
+            const index = voiceSelect.value;
+            if (index === 'default') {
+                selectedVoice = null;
+                updateUIText('en'); // 선택 해제 시 영어로 복귀
+            } else {
+                const voices = synth.getVoices();
+                selectedVoice = voices[index];
+                if (selectedVoice) {
+                    // 선택된 음성의 언어 코드 (ko, en, ja...) 추출
+                    const langCode = selectedVoice.lang.split('-')[0];
+                    // 해당 언어로 UI 전체 변경
+                    updateUIText(langCode);
+                }
+            }
+        });
+
+        // --- 4. 타이머 기능 ---
         async function startTimer() {
             if (isRunning) return;
 
+            // 처음 시작일 때 시간 설정
             if (remainingSeconds === 0) {
-                const min = parseInt(document.getElementById('minInput').value) || 0;
-                const sec = parseInt(document.getElementById('secInput').value) || 0;
+                const min = parseInt(uiMinInput.value) || 0;
+                const sec = parseInt(uiSecInput.value) || 0;
                 totalSeconds = min * 60 + sec;
                 remainingSeconds = totalSeconds;
             }
 
-            if (totalSeconds <= 0) return alert("Set some time first!");
+            if (totalSeconds <= 0) {
+                alert("Set some time first!");
+                return;
+            }
 
-            document.querySelector('.btn-start').style.display = 'none';
-            document.querySelector('.btn-stop').style.display = 'block';
-            document.querySelector('.btn-reset').style.display = 'none';
+            // UI 변경
+            uiBtnStart.style.display = 'none';
+            uiBtnStop.style.display = 'block';
+            uiBtnReset.style.display = 'none';
             document.getElementById('inputArea').style.display = 'none';
-            document.getElementById('voiceSelect').style.display = 'none';
+            voiceSelect.style.display = 'none';
 
             isRunning = true;
 
-            const voiceIndex = voiceSelect.value;
-            const voices = synth.getVoices();
-            if (voiceIndex !== 'default' && voices[voiceIndex]) {
-                selectedVoice = voices[voiceIndex];
-                setPageLanguage(selectedVoice.lang);
-            } else {
-                selectedVoice = null;
-                setPageLanguage('en');
-            }
+            // 음성으로 시작 알림
+            const langData = translations[currentLang] || translations['en'];
+            speak(langData.voice_start);
 
-            // 3) 시작 멘트도 언어별로
-            speakStartMessage();
-
+            // 화면 꺼짐 방지
             try {
                 wakeLock = await navigator.wakeLock.request('screen');
             } catch (err) {
@@ -319,10 +441,11 @@
             clearInterval(timerInterval);
             isRunning = false;
 
-            document.querySelector('.btn-start').textContent = 'Resume ▶️';
-            document.querySelector('.btn-start').style.display = 'block';
-            document.querySelector('.btn-stop').style.display = 'none';
-            document.querySelector('.btn-reset').style.display = 'block';
+            const langData = translations[currentLang] || translations['en'];
+            uiBtnStart.textContent = langData.btn_resume;
+            uiBtnStart.style.display = 'block';
+            uiBtnStop.style.display = 'none';
+            uiBtnReset.style.display = 'block';
 
             if (wakeLock) {
                 wakeLock.release().then(() => wakeLock = null);
@@ -334,20 +457,18 @@
             remainingSeconds = 0;
             totalSeconds = 0;
 
-            document.querySelector('.btn-start').textContent = 'Start ▶️';
-            document.querySelector('.btn-start').style.display = 'block';
-            document.querySelector('.btn-stop').style.display = 'none';
-            document.querySelector('.btn-reset').style.display = 'none';
+            const langData = translations[currentLang] || translations['en'];
+            uiBtnStart.textContent = langData.btn_start;
+            uiBtnStart.style.display = 'block';
+            uiBtnStop.style.display = 'none';
+            uiBtnReset.style.display = 'none';
             document.getElementById('inputArea').style.display = 'flex';
-            document.getElementById('voiceSelect').style.display = 'block';
-            document.getElementById('display').classList.remove('pulse');
-            document.getElementById('display').style.color = '#4A5568';
+            voiceSelect.style.display = 'block';
+            display.classList.remove('pulse');
+            display.style.color = '#4A5568';
 
             display.textContent = "00:00";
             circleProgress.style.strokeDashoffset = 0;
-
-            // 리셋 시 기본 언어 다시 영어
-            setPageLanguage('en');
         }
 
         function finishTimer() {
@@ -355,14 +476,15 @@
             remainingSeconds = 0;
             updateDisplay();
 
-            display.textContent = "Done!";
-            document.getElementById('display').classList.add('pulse');
-            document.getElementById('display').style.color = '#F56565';
+            const langData = translations[currentLang] || translations['en'];
+            display.textContent = langData.done_msg;
+            display.classList.add('pulse');
+            display.style.color = '#F56565';
 
-            speakFinishMessage();
+            speak(langData.voice_done);
 
-            document.querySelector('.btn-start').style.display = 'none';
-            document.querySelector('.btn-reset').style.display = 'block';
+            uiBtnStart.style.display = 'none';
+            uiBtnReset.style.display = 'block';
         }
 
         function updateDisplay() {
@@ -380,66 +502,21 @@
         function checkAnnounce(seconds) {
             if (seconds <= 0) return;
 
+            const langData = translations[currentLang] || translations['en'];
             let msg = "";
 
-            if (seconds > 60 && seconds % 60 === 0) {
-                msg = buildRemainingMessage(seconds);
-            } else if (seconds === 60 || seconds === 30) {
-                msg = buildRemainingMessage(seconds);
+            if (seconds === 60) {
+                msg = langData.voice_1min;
+            } else if (seconds === 30) {
+                msg = langData.voice_30sec;
+            } else if (seconds > 60 && seconds % 60 === 0) {
+                const minutes = Math.floor(seconds / 60);
+                msg = langData.voice_xmin.replace('{m}', minutes);
             } else if (seconds <= 10 && seconds > 0) {
-                msg = buildCountdownMessage(seconds);
+                msg = String(seconds);
             }
 
             if (msg) speak(msg);
-        }
-
-        // 3) 언어별 멘트 생성
-        function buildRemainingMessage(seconds) {
-            const minutes = Math.floor(seconds / 60);
-
-            if (currentLangCode === 'ko') {
-                if (seconds === 60) return '1분 남았습니다.';
-                if (seconds === 30) return '30초 남았습니다.';
-                return `${minutes}분 남았습니다.`;
-            } else if (currentLangCode === 'en') {
-                if (seconds === 60) return 'One minute left.';
-                if (seconds === 30) return 'Thirty seconds left.';
-                return `${minutes} minutes left.`;
-            } else {
-                if (seconds === 60) return '1 minute remaining.';
-                if (seconds === 30) return '30 seconds remaining.';
-                return `${minutes} minutes remaining.`;
-            }
-        }
-
-        function buildCountdownMessage(seconds) {
-            if (currentLangCode === 'ko') {
-                return `${seconds}`;
-            } else if (currentLangCode === 'en') {
-                return `${seconds}`;
-            } else {
-                return `${seconds}`;
-            }
-        }
-
-        function speakStartMessage() {
-            if (currentLangCode === 'ko') {
-                speak('타이머를 시작합니다.');
-            } else if (currentLangCode === 'en') {
-                speak('Timer starts now.');
-            } else {
-                speak('The timer has started.');
-            }
-        }
-
-        function speakFinishMessage() {
-            if (currentLangCode === 'ko') {
-                speak('시간이 종료되었습니다. 잘했어요!');
-            } else if (currentLangCode === 'en') {
-                speak("Time's up! Great job!");
-            } else {
-                speak('Timer finished. Well done!');
-            }
         }
 
         function speak(text) {
