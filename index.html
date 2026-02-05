@@ -96,9 +96,9 @@
 
         .timer-container {
             position: relative;
-            width: 300px;
-            height: 300px;
-            margin-bottom: 30px;
+            width: 320px;
+            height: 320px;
+            margin-bottom: 20px;
         }
         
         .timer-circle {
@@ -109,37 +109,74 @@
         
         .timer-circle circle {
             fill: none;
-            stroke-width: 15;
             stroke-linecap: round;
         }
         
+        /* 3중 동심원 (Stopwatch용) */
         .circle-bg { 
-            stroke: rgba(255, 255, 255, 0.3);
+            stroke: rgba(255, 255, 255, 0.2);
+            stroke-width: 12;
         }
         
-        .circle-progress { 
+        /* Timer용 단일 원 */
+        .circle-progress-single { 
+            stroke-width: 15;
             stroke-dasharray: 880;
             stroke-dashoffset: 0;
             transition: stroke-dashoffset 1s linear, stroke 0.3s;
         }
 
-        body.mode-timer .circle-progress {
+        /* Stopwatch용 3중 원 */
+        .circle-10sec {
+            stroke: #FFD700;
+            stroke-width: 8;
+            stroke-dasharray: 754; /* 2πr, r=120 */
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 0.2s linear;
+        }
+
+        .circle-1min {
+            stroke: #FF6B9D;
+            stroke-width: 10;
+            stroke-dasharray: 628; /* 2πr, r=100 */
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 0.2s linear;
+        }
+
+        .circle-60min {
+            stroke: #667eea;
+            stroke-width: 12;
+            stroke-dasharray: 502; /* 2πr, r=80 */
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 0.2s linear;
+        }
+
+        body.mode-timer .circle-progress-single {
             stroke: #667eea;
         }
 
-        body.mode-stopwatch .circle-progress {
-            stroke: #f5576c;
-        }
-
-        .time-display {
+        .time-display-wrapper {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 3.5rem;
+            text-align: center;
+        }
+
+        .time-display {
+            font-size: 3.2rem;
             font-weight: bold;
             color: #fff;
             text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+            margin: 0;
+        }
+
+        .seconds-display {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: 5px;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
         }
 
         .controls {
@@ -150,16 +187,31 @@
             max-width: 400px;
         }
 
+        /* 입력 그룹 개선 */
         .input-group {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 15px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .input-label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #667eea;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
         }
 
         input[type="number"] {
-            width: 80px;
+            width: 90px;
             padding: 12px;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             text-align: center;
             border: 3px solid rgba(255, 255, 255, 0.6);
             border-radius: 15px;
@@ -253,8 +305,8 @@
         }
         
         @keyframes pulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.1); }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         .hidden { 
@@ -264,8 +316,9 @@
         /* 반응형 */
         @media (max-width: 400px) {
             h1 { font-size: 1.8rem; }
-            .timer-container { width: 250px; height: 250px; }
-            .time-display { font-size: 2.8rem; }
+            .timer-container { width: 280px; height: 280px; }
+            .time-display { font-size: 2.6rem; }
+            .seconds-display { font-size: 0.95rem; }
         }
     </style>
 </head>
@@ -282,18 +335,39 @@
 
     <!-- 타이머/스톱워치 원형 -->
     <div class="timer-container">
-        <svg class="timer-circle">
-            <circle class="circle-bg" cx="150" cy="150" r="140"></circle>
-            <circle class="circle-progress" cx="150" cy="150" r="140"></circle>
+        <svg class="timer-circle" id="timerSvg">
+            <!-- Timer 모드: 단일 원 -->
+            <circle class="circle-bg" cx="160" cy="160" r="140"></circle>
+            <circle class="circle-progress-single" id="progressSingle" cx="160" cy="160" r="140"></circle>
+            
+            <!-- Stopwatch 모드: 3중 동심원 -->
+            <circle class="circle-bg" id="bg10sec" cx="160" cy="160" r="120" style="display:none;"></circle>
+            <circle class="circle-10sec" id="progress10sec" cx="160" cy="160" r="120" style="display:none;"></circle>
+            
+            <circle class="circle-bg" id="bg1min" cx="160" cy="160" r="100" style="display:none;"></circle>
+            <circle class="circle-1min" id="progress1min" cx="160" cy="160" r="100" style="display:none;"></circle>
+            
+            <circle class="circle-bg" id="bg60min" cx="160" cy="160" r="80" style="display:none;"></circle>
+            <circle class="circle-60min" id="progress60min" cx="160" cy="160" r="80" style="display:none;"></circle>
         </svg>
-        <div class="time-display" id="display">00:00</div>
+        
+        <div class="time-display-wrapper">
+            <div class="time-display" id="display">00:00</div>
+            <div class="seconds-display" id="secondsDisplay">Total: 0 seconds</div>
+        </div>
     </div>
 
     <div class="controls">
         <!-- 타이머 입력 (Timer 모드에서만) -->
         <div class="input-group" id="inputArea">
-            <input type="number" id="minInput" placeholder="min" min="0" max="60" value="1">
-            <input type="number" id="secInput" placeholder="sec" min="0" max="59" value="0">
+            <div class="input-wrapper">
+                <span class="input-label" id="labelMin">Minutes</span>
+                <input type="number" id="minInput" placeholder="0" min="0" max="60" value="1">
+            </div>
+            <div class="input-wrapper">
+                <span class="input-label" id="labelSec">Seconds</span>
+                <input type="number" id="secInput" placeholder="0" min="0" max="59" value="0">
+            </div>
         </div>
 
         <!-- 국기 선택 -->
@@ -315,7 +389,8 @@
             'en': {
                 timer_title: "🦊 Kids Voice Timer",
                 stopwatch_title: "🦊 Kids Voice Stopwatch",
-                min_ph: "min", sec_ph: "sec", hr_ph: "hr",
+                label_min: "Minutes", label_sec: "Seconds",
+                total_sec: "Total: {s} seconds",
                 btn_start: "Start ▶", btn_resume: "Resume ▶",
                 btn_pause: "Pause ⏸", btn_reset: "Reset ↺",
                 done_msg: "Done!", started_msg: "Started!",
@@ -331,7 +406,8 @@
             'ko': {
                 timer_title: "🦊 키즈 보이스 타이머",
                 stopwatch_title: "🦊 키즈 보이스 스톱워치",
-                min_ph: "분", sec_ph: "초", hr_ph: "시",
+                label_min: "분", label_sec: "초",
+                total_sec: "총 {s}초",
                 btn_start: "시작 ▶", btn_resume: "계속 ▶",
                 btn_pause: "멈춤 ⏸", btn_reset: "처음부터 ↺",
                 done_msg: "끝!", started_msg: "시작!",
@@ -347,7 +423,8 @@
             'ja': {
                 timer_title: "🦊 キッズボイスタイマー",
                 stopwatch_title: "🦊 キッズボイスストップウォッチ",
-                min_ph: "分", sec_ph: "秒", hr_ph: "時",
+                label_min: "分", label_sec: "秒",
+                total_sec: "合計: {s}秒",
                 btn_start: "スタート ▶", btn_resume: "再開 ▶",
                 btn_pause: "停止 ⏸", btn_reset: "リセット ↺",
                 done_msg: "終了!", started_msg: "スタート!",
@@ -363,7 +440,8 @@
             'zh': {
                 timer_title: "🦊 儿童语音计时器",
                 stopwatch_title: "🦊 儿童语音秒表",
-                min_ph: "分", sec_ph: "秒", hr_ph: "时",
+                label_min: "分钟", label_sec: "秒",
+                total_sec: "总共: {s}秒",
                 btn_start: "开始 ▶", btn_resume: "继续 ▶",
                 btn_pause: "暂停 ⏸", btn_reset: "重置 ↺",
                 done_msg: "完成!", started_msg: "开始!",
@@ -379,7 +457,8 @@
             'es': {
                 timer_title: "🦊 Temporizador de Voz",
                 stopwatch_title: "🦊 Cronómetro de Voz",
-                min_ph: "min", sec_ph: "seg", hr_ph: "hr",
+                label_min: "Minutos", label_sec: "Segundos",
+                total_sec: "Total: {s} segundos",
                 btn_start: "Iniciar ▶", btn_resume: "Reanudar ▶",
                 btn_pause: "Pausa ⏸", btn_reset: "Reiniciar ↺",
                 done_msg: "¡Listo!", started_msg: "¡Comenzó!",
@@ -395,7 +474,8 @@
             'fr': {
                 timer_title: "🦊 Minuteur Vocal",
                 stopwatch_title: "🦊 Chronomètre Vocal",
-                min_ph: "min", sec_ph: "sec", hr_ph: "hr",
+                label_min: "Minutes", label_sec: "Secondes",
+                total_sec: "Total: {s} secondes",
                 btn_start: "Démarrer ▶", btn_resume: "Reprendre ▶",
                 btn_pause: "Pause ⏸", btn_reset: "Réinitialiser ↺",
                 done_msg: "Fini!", started_msg: "Démarré!",
@@ -411,7 +491,8 @@
             'de': {
                 timer_title: "🦊 Sprach-Timer",
                 stopwatch_title: "🦊 Sprach-Stoppuhr",
-                min_ph: "min", sec_ph: "sek", hr_ph: "std",
+                label_min: "Minuten", label_sec: "Sekunden",
+                total_sec: "Gesamt: {s} Sekunden",
                 btn_start: "Start ▶", btn_resume: "Fortsetzen ▶",
                 btn_pause: "Pause ⏸", btn_reset: "Zurücksetzen ↺",
                 done_msg: "Fertig!", started_msg: "Gestartet!",
@@ -427,7 +508,8 @@
             'it': {
                 timer_title: "🦊 Timer Vocale",
                 stopwatch_title: "🦊 Cronometro Vocale",
-                min_ph: "min", sec_ph: "sec", hr_ph: "ora",
+                label_min: "Minuti", label_sec: "Secondi",
+                total_sec: "Totale: {s} secondi",
                 btn_start: "Avvia ▶", btn_resume: "Riprendi ▶",
                 btn_pause: "Pausa ⏸", btn_reset: "Resetta ↺",
                 done_msg: "Fatto!", started_msg: "Avviato!",
@@ -443,7 +525,8 @@
             'pt': {
                 timer_title: "🦊 Temporizador de Voz",
                 stopwatch_title: "🦊 Cronômetro de Voz",
-                min_ph: "min", sec_ph: "seg", hr_ph: "hr",
+                label_min: "Minutos", label_sec: "Segundos",
+                total_sec: "Total: {s} segundos",
                 btn_start: "Iniciar ▶", btn_resume: "Retomar ▶",
                 btn_pause: "Pausar ⏸", btn_reset: "Reiniciar ↺",
                 done_msg: "Pronto!", started_msg: "Iniciado!",
@@ -459,7 +542,8 @@
             'ru': {
                 timer_title: "🦊 Голосовой Таймер",
                 stopwatch_title: "🦊 Голосовой Секундомер",
-                min_ph: "мин", sec_ph: "сек", hr_ph: "час",
+                label_min: "Минуты", label_sec: "Секунды",
+                total_sec: "Всего: {s} секунд",
                 btn_start: "Старт ▶", btn_resume: "Продолжить ▶",
                 btn_pause: "Пауза ⏸", btn_reset: "Сброс ↺",
                 done_msg: "Готово!", started_msg: "Запущено!",
@@ -475,7 +559,8 @@
             'ar': {
                 timer_title: "🦊 مؤقت صوتي للأطفال",
                 stopwatch_title: "🦊 ساعة إيقاف صوتية",
-                min_ph: "دقيقة", sec_ph: "ثانية", hr_ph: "ساعة",
+                label_min: "دقائق", label_sec: "ثواني",
+                total_sec: "المجموع: {s} ثانية",
                 btn_start: "ابدأ ▶", btn_resume: "استئناف ▶",
                 btn_pause: "إيقاف ⏸", btn_reset: "إعادة تعيين ↺",
                 done_msg: "انتهى!", started_msg: "بدأ!",
@@ -491,7 +576,8 @@
             'hi': {
                 timer_title: "🦊 किड्स वॉयस टाइमर",
                 stopwatch_title: "🦊 किड्स वॉयस स्टॉपवॉच",
-                min_ph: "मिनट", sec_ph: "सेकंड", hr_ph: "घंटा",
+                label_min: "मिनट", label_sec: "सेकंड",
+                total_sec: "कुल: {s} सेकंड",
                 btn_start: "शुरू करें ▶", btn_resume: "फिर से शुरू ▶",
                 btn_pause: "रोकें ⏸", btn_reset: "रीसेट ↺",
                 done_msg: "पूरा हुआ!", started_msg: "शुरू हुआ!",
@@ -506,28 +592,28 @@
             }
         };
 
-        // 국기 → 언어 매핑 (확장 가능)
+        // 국기 → 언어 매핑
         const flagToLang = {
-            '🇺🇸': ['en'],      // English
-            '🇰🇷': ['ko'],      // Korean
-            '🇯🇵': ['ja'],      // Japanese
-            '🇨🇳': ['zh', 'cmn', 'yue'], // Chinese
-            '🇪🇸': ['es'],      // Spanish
-            '🇫🇷': ['fr'],      // French
-            '🇩🇪': ['de'],      // German
-            '🇮🇹': ['it'],      // Italian
-            '🇵🇹': ['pt'],      // Portuguese
-            '🇷🇺': ['ru'],      // Russian
-            '🇸🇦': ['ar'],      // Arabic
-            '🇮🇳': ['hi', 'bn', 'te', 'ta', 'mr', 'gu'] // Indian languages
+            '🇺🇸': ['en'],
+            '🇰🇷': ['ko'],
+            '🇯🇵': ['ja'],
+            '🇨🇳': ['zh', 'cmn', 'yue'],
+            '🇪🇸': ['es'],
+            '🇫🇷': ['fr'],
+            '🇩🇪': ['de'],
+            '🇮🇹': ['it'],
+            '🇵🇹': ['pt'],
+            '🇷🇺': ['ru'],
+            '🇸🇦': ['ar'],
+            '🇮🇳': ['hi', 'bn', 'te', 'ta', 'mr', 'gu']
         };
 
         // === 전역 상태 ===
-        let currentMode = 'timer'; // 'timer' or 'stopwatch'
+        let currentMode = 'timer';
         let interval;
-        let elapsedSeconds = 0; // 스톱워치용
-        let totalSeconds = 0;   // 타이머용 총 시간
-        let remainingSeconds = 0; // 타이머용 남은 시간
+        let elapsedSeconds = 0;
+        let totalSeconds = 0;
+        let remainingSeconds = 0;
         let wakeLock = null;
         let synth = window.speechSynthesis;
         let selectedVoice = null;
@@ -538,17 +624,30 @@
 
         // === DOM 요소 ===
         const display = document.getElementById('display');
-        const circleProgress = document.querySelector('.circle-progress');
+        const secondsDisplay = document.getElementById('secondsDisplay');
+        const progressSingle = document.getElementById('progressSingle');
+        const progress10sec = document.getElementById('progress10sec');
+        const progress1min = document.getElementById('progress1min');
+        const progress60min = document.getElementById('progress60min');
+        const bg10sec = document.getElementById('bg10sec');
+        const bg1min = document.getElementById('bg1min');
+        const bg60min = document.getElementById('bg60min');
         const voiceSelect = document.getElementById('voiceSelect');
         const flagSelector = document.getElementById('flagSelector');
         const uiTitle = document.getElementById('ui-title');
+        const labelMin = document.getElementById('labelMin');
+        const labelSec = document.getElementById('labelSec');
         const uiMinInput = document.getElementById('minInput');
         const uiSecInput = document.getElementById('secInput');
         const uiBtnStart = document.getElementById('btn-start');
         const uiBtnStop = document.getElementById('btn-stop');
         const uiBtnReset = document.getElementById('btn-reset');
         const inputArea = document.getElementById('inputArea');
-        const fullDashArray = 880;
+
+        const singleCircleDashArray = 880; // 2πr, r=140
+        const circle10secDashArray = 754; // 2πr, r=120
+        const circle1minDashArray = 628;  // 2πr, r=100
+        const circle60minDashArray = 502; // 2πr, r=80
 
         // === 모드 전환 ===
         function switchMode(mode) {
@@ -568,9 +667,29 @@
             if (mode === 'timer') {
                 inputArea.classList.remove('hidden');
                 display.textContent = '00:00';
+                secondsDisplay.textContent = 'Total: 0 seconds';
+                
+                // Timer 원만 표시
+                progressSingle.style.display = 'block';
+                progress10sec.style.display = 'none';
+                progress1min.style.display = 'none';
+                progress60min.style.display = 'none';
+                bg10sec.style.display = 'none';
+                bg1min.style.display = 'none';
+                bg60min.style.display = 'none';
             } else {
                 inputArea.classList.add('hidden');
                 display.textContent = '00:00:00';
+                secondsDisplay.textContent = 'Total: 0 seconds';
+                
+                // Stopwatch 3중 원 표시
+                progressSingle.style.display = 'none';
+                progress10sec.style.display = 'block';
+                progress1min.style.display = 'block';
+                progress60min.style.display = 'block';
+                bg10sec.style.display = 'block';
+                bg1min.style.display = 'block';
+                bg60min.style.display = 'block';
             }
 
             updateUIText(currentLang);
@@ -585,8 +704,8 @@
 
             if (currentMode === 'timer') {
                 uiTitle.textContent = langData.timer_title;
-                if (uiMinInput) uiMinInput.placeholder = langData.min_ph;
-                if (uiSecInput) uiSecInput.placeholder = langData.sec_ph;
+                labelMin.textContent = langData.label_min;
+                labelSec.textContent = langData.label_sec;
             } else {
                 uiTitle.textContent = langData.stopwatch_title;
             }
@@ -604,6 +723,15 @@
                 }
             }
             uiBtnReset.textContent = langData.btn_reset;
+            
+            updateSecondsDisplay();
+        }
+
+        // === 총 초 표시 업데이트 ===
+        function updateSecondsDisplay() {
+            const langData = translations[currentLang] || translations['en'];
+            let totalSecs = currentMode === 'timer' ? remainingSeconds : elapsedSeconds;
+            secondsDisplay.textContent = langData.total_sec.replace('{s}', totalSecs);
         }
 
         // === 국기 렌더링 ===
@@ -622,12 +750,10 @@
         function selectFlag(flag) {
             selectedFlag = flag;
             
-            // 시각적 표시
             document.querySelectorAll('.flag-option').forEach(opt => {
                 opt.classList.toggle('selected', opt.textContent === flag);
             });
 
-            // 해당 국가 언어로 음성 필터링
             filterVoicesByFlag(flag);
         }
 
@@ -664,7 +790,6 @@
                 voiceSelect.appendChild(option);
             });
 
-            // 자동으로 첫 번째 음성 선택
             if (filtered.length > 0) {
                 voiceSelect.selectedIndex = 1;
                 voiceSelect.dispatchEvent(new Event('change'));
@@ -675,7 +800,6 @@
         function loadVoices() {
             allVoices = synth.getVoices();
             
-            // 기본 렌더링 (모든 음성)
             voiceSelect.innerHTML = '';
             const defaultOpt = document.createElement('option');
             defaultOpt.value = 'default';
@@ -838,6 +962,7 @@
 
             display.classList.remove('pulse');
             display.style.color = '#fff';
+            updateSecondsDisplay();
             resetProgress();
         }
 
@@ -855,6 +980,7 @@
             
             uiBtnStart.style.display = 'none';
             uiBtnReset.style.display = 'block';
+            updateSecondsDisplay();
         }
 
         // === 타이머 디스플레이 업데이트 ===
@@ -862,11 +988,12 @@
             const min = Math.floor(Math.max(remainingSeconds, 0) / 60);
             const sec = Math.max(remainingSeconds, 0) % 60;
             display.textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+            updateSecondsDisplay();
 
             if (totalSeconds > 0) {
                 const clamped = Math.max(0, Math.min(remainingSeconds, totalSeconds));
-                const offset = fullDashArray - (clamped / totalSeconds) * fullDashArray;
-                circleProgress.style.strokeDashoffset = offset;
+                const offset = singleCircleDashArray - (clamped / totalSeconds) * singleCircleDashArray;
+                progressSingle.style.strokeDashoffset = offset;
             }
         }
 
@@ -876,12 +1003,23 @@
             const min = Math.floor((elapsedSeconds % 3600) / 60);
             const sec = elapsedSeconds % 60;
             display.textContent = `${String(hrs).padStart(2, '0')}:${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+            updateSecondsDisplay();
 
-            // 진행바: 최대 1시간 기준으로 순환
-            const maxSeconds = 3600;
-            const progress = (elapsedSeconds % maxSeconds) / maxSeconds;
-            const offset = fullDashArray - (progress * fullDashArray);
-            circleProgress.style.strokeDashoffset = offset;
+            // 3중 원 업데이트
+            // 1. 10초 원 (가장 바깥)
+            const progress10 = (elapsedSeconds % 10) / 10;
+            const offset10 = circle10secDashArray - (progress10 * circle10secDashArray);
+            progress10sec.style.strokeDashoffset = offset10;
+
+            // 2. 1분 원 (중간)
+            const progress60 = (elapsedSeconds % 60) / 60;
+            const offset60 = circle1minDashArray - (progress60 * circle1minDashArray);
+            progress1min.style.strokeDashoffset = offset60;
+
+            // 3. 60분 원 (가장 안쪽)
+            const progress3600 = (elapsedSeconds % 3600) / 3600;
+            const offset3600 = circle60minDashArray - (progress3600 * circle60minDashArray);
+            progress60min.style.strokeDashoffset = offset3600;
         }
 
         // === 타이머 안내 음성 ===
@@ -943,7 +1081,10 @@
 
         // === 진행바 리셋 ===
         function resetProgress() {
-            circleProgress.style.strokeDashoffset = 0;
+            progressSingle.style.strokeDashoffset = 0;
+            progress10sec.style.strokeDashoffset = 0;
+            progress1min.style.strokeDashoffset = 0;
+            progress60min.style.strokeDashoffset = 0;
         }
 
         // === 초기화 ===
