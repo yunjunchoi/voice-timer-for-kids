@@ -340,8 +340,7 @@
             <circle class="circle-bg" cx="160" cy="160" r="140"></circle>
             <circle class="circle-progress-single" id="progressSingle" cx="160" cy="160" r="140"></circle>
             
-            <!-- Stopwatch 모드: 3중 동심원 -->
-            <circle class="circle-bg" id="bg10sec" cx="160" cy="160" r="120" style="display:none;"></circle>
+            <!-- Stopwatch 모드: 3중 동심원 (배경원 제거, 진행원만 표시) -->
             <circle class="circle-10sec" id="progress10sec" cx="160" cy="160" r="120" style="display:none;"></circle>
             
             <circle class="circle-bg" id="bg1min" cx="160" cy="160" r="100" style="display:none;"></circle>
@@ -629,7 +628,6 @@
         const progress10sec = document.getElementById('progress10sec');
         const progress1min = document.getElementById('progress1min');
         const progress60min = document.getElementById('progress60min');
-        const bg10sec = document.getElementById('bg10sec');
         const bg1min = document.getElementById('bg1min');
         const bg60min = document.getElementById('bg60min');
         const voiceSelect = document.getElementById('voiceSelect');
@@ -674,7 +672,6 @@
                 progress10sec.style.display = 'none';
                 progress1min.style.display = 'none';
                 progress60min.style.display = 'none';
-                bg10sec.style.display = 'none';
                 bg1min.style.display = 'none';
                 bg60min.style.display = 'none';
             } else {
@@ -687,7 +684,6 @@
                 progress10sec.style.display = 'block';
                 progress1min.style.display = 'block';
                 progress60min.style.display = 'block';
-                bg10sec.style.display = 'block';
                 bg1min.style.display = 'block';
                 bg60min.style.display = 'block';
             }
@@ -1028,6 +1024,7 @@
             
             const langData = translations[currentLang] || translations['en'];
             let msg = "";
+            let speedRate = 1.0;
 
             if (seconds > 60 && seconds % 60 === 0) {
                 msg = langData.voice_xmin.replace('{m}', seconds / 60);
@@ -1035,11 +1032,16 @@
                 msg = langData.voice_1min;
             } else if (seconds === 30) {
                 msg = langData.voice_30sec;
-            } else if (seconds <= 10) {
+            } else if (seconds <= 100) {
+                // 1~100초 모두 카운트다운
                 msg = `${seconds}`;
+                // 10초 초과시 1.1배 속도
+                if (seconds > 10) {
+                    speedRate = 1.1;
+                }
             }
 
-            if (msg) speak(msg);
+            if (msg) speak(msg, speedRate);
         }
 
         // === 스톱워치 안내 음성 ===
@@ -1063,7 +1065,7 @@
         }
 
         // === 음성 출력 ===
-        function speak(text) {
+        function speak(text, rate = 1.0) {
             synth.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             
@@ -1074,7 +1076,7 @@
                 utterance.lang = 'en-US';
             }
             
-            utterance.rate = 1.0;
+            utterance.rate = rate;
             utterance.pitch = 1.1;
             synth.speak(utterance);
         }
