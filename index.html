@@ -456,9 +456,9 @@
         <!-- 음성 속도 조절 -->
         <div class="speed-control">
             <div class="speed-label" id="speedLabel">🎵 Voice Speed</div>
-            <div class="speed-value" id="speedValue">1.0x</div>
+            <div class="speed-value" id="speedValue">1.2x</div>
             <input type="range" class="speed-slider" id="speedSlider" 
-                   min="0.5" max="2.0" step="0.1" value="1.0">
+                   min="0.5" max="2.0" step="0.1" value="1.2">
         </div>
 
         <button class="btn-start" id="btn-start" onclick="startAction()">Start ▶</button>
@@ -717,7 +717,7 @@
         let selectedFlag = null;
         let allVoices = [];
         let lastSpokenSecond = -1; // 음성 중복 방지용
-        let userSpeedMultiplier = 1.0; // 사용자 설정 속도 배율
+        let userSpeedMultiplier = 1.2; // 사용자 설정 속도 배율 (현재 설정값)
 
         // === DOM 요소 ===
         const display = document.getElementById('display');
