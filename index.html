@@ -4,38 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Kids Voice Timer</title>
+    <title>Kids Voice Timer & Stopwatch</title>
     <style>
         :root {
             --primary-color: #FF9F1C;
-            --bg-color: #F0F4F8;
             --text-color: #2D3748;
+            --timer-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --stopwatch-bg: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        * {
+            box-sizing: border-box;
         }
         
         body {
-            font-family: 'Jua', 'Gamja Flower', sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Jua', 'Gamja Flower', 'Comic Sans MS', sans-serif;
             color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            overflow: hidden;
+            padding: 20px;
+            overflow-x: hidden;
             touch-action: manipulation;
+            transition: background 0.5s ease;
         }
 
-        /* 로고 디자인 복구 및 강화 */
+        body.mode-timer {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        body.mode-stopwatch {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        }
+
+        /* 탭 전환 */
+        .mode-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 8px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .mode-tab {
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.5);
+            color: #555;
+        }
+
+        .mode-tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: scale(1.05);
+        }
+
+        .mode-tab:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 로고 */
         h1 { 
             margin-bottom: 25px; 
             font-size: 2.2rem; 
-            color: #FF6B6B; 
             text-align: center;
-            text-shadow: 2px 2px 0px #fff;
-            background: rgba(255, 255, 255, 0.5);
-            padding: 10px 20px;
-            border-radius: 20px;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.6);
+            padding: 15px 25px;
+            border-radius: 25px;
+            transition: all 0.3s;
+        }
+
+        body.mode-timer h1 {
+            color: #667eea;
+        }
+
+        body.mode-stopwatch h1 {
+            color: #f5576c;
         }
 
         .timer-container {
@@ -57,12 +113,22 @@
             stroke-linecap: round;
         }
         
-        .circle-bg { stroke: #e6e6e6; }
+        .circle-bg { 
+            stroke: rgba(255, 255, 255, 0.3);
+        }
+        
         .circle-progress { 
-            stroke: var(--primary-color); 
             stroke-dasharray: 880;
             stroke-dashoffset: 0;
-            transition: stroke-dashoffset 1s linear;
+            transition: stroke-dashoffset 1s linear, stroke 0.3s;
+        }
+
+        body.mode-timer .circle-progress {
+            stroke: #667eea;
+        }
+
+        body.mode-stopwatch .circle-progress {
+            stroke: #f5576c;
         }
 
         .time-display {
@@ -70,9 +136,10 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 4rem;
+            font-size: 3.5rem;
             font-weight: bold;
-            color: #4A5568;
+            color: #fff;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
         }
 
         .controls {
@@ -80,7 +147,7 @@
             flex-direction: column;
             gap: 15px;
             width: 90%;
-            max-width: 350px; /* 너비 약간 증가 (긴 음성 이름 대응) */
+            max-width: 400px;
         }
 
         .input-group {
@@ -90,60 +157,130 @@
         }
 
         input[type="number"] {
-            width: 70px;
-            padding: 10px;
+            width: 80px;
+            padding: 12px;
             font-size: 1.2rem;
             text-align: center;
-            border: 2px solid #CBD5E0;
-            border-radius: 10px;
+            border: 3px solid rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            font-weight: bold;
         }
 
-        /* Select 박스 디자인 */
-        select {
-            padding: 12px;
-            font-size: 1rem;
+        /* 국기 선택 */
+        .flag-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+        }
+
+        .flag-option {
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 8px;
             border-radius: 10px;
-            border: 2px solid #CBD5E0;
-            background: white;
+            transition: all 0.2s;
+            background: transparent;
+            border: 3px solid transparent;
+        }
+
+        .flag-option:hover {
+            transform: scale(1.2);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .flag-option.selected {
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 음성 선택 */
+        select {
+            padding: 14px;
+            font-size: 1.05rem;
+            border-radius: 15px;
+            border: 3px solid rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.9);
             width: 100%;
+            font-weight: bold;
         }
         
-        /* 옵션 그룹 스타일 (브라우저마다 다를 수 있음) */
         optgroup {
             font-weight: bold;
             color: #4A5568;
         }
 
         button {
-            padding: 15px;
-            font-size: 1.2rem;
+            padding: 16px;
+            font-size: 1.3rem;
             border: none;
-            border-radius: 15px;
+            border-radius: 18px;
             cursor: pointer;
             font-weight: bold;
-            transition: transform 0.1s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
         
-        button:active { transform: scale(0.98); }
+        button:active { 
+            transform: scale(0.95);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
         
-        .btn-start { background-color: #48BB78; color: white; }
-        .btn-stop { background-color: #F56565; color: white; display: none;}
-        .btn-reset { background-color: #ED8936; color: white; display: none;}
+        .btn-start { 
+            background: linear-gradient(135deg, #48BB78, #38a169);
+            color: white; 
+        }
+        
+        .btn-stop { 
+            background: linear-gradient(135deg, #F56565, #e53e3e);
+            color: white; 
+            display: none;
+        }
+        
+        .btn-reset { 
+            background: linear-gradient(135deg, #ED8936, #dd6b20);
+            color: white; 
+            display: none;
+        }
 
-        .pulse { animation: pulse 1s infinite; }
+        .pulse { 
+            animation: pulse 1s infinite; 
+        }
+        
         @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.05); }
-            100% { transform: translate(-50%, -50%) scale(1); }
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .hidden { 
+            display: none !important; 
+        }
+
+        /* 반응형 */
+        @media (max-width: 400px) {
+            h1 { font-size: 1.8rem; }
+            .timer-container { width: 250px; height: 250px; }
+            .time-display { font-size: 2.8rem; }
         }
     </style>
 </head>
-<body>
+<body class="mode-timer">
 
-    <!-- 로고 영역 -->
+    <!-- 모드 전환 탭 -->
+    <div class="mode-tabs">
+        <button class="mode-tab active" onclick="switchMode('timer')">⏱️ Timer</button>
+        <button class="mode-tab" onclick="switchMode('stopwatch')">⏲️ Stopwatch</button>
+    </div>
+
+    <!-- 로고 -->
     <h1 id="ui-title">🦊 Kids Voice Timer</h1>
 
+    <!-- 타이머/스톱워치 원형 -->
     <div class="timer-container">
         <svg class="timer-circle">
             <circle class="circle-bg" cx="150" cy="150" r="140"></circle>
@@ -153,145 +290,314 @@
     </div>
 
     <div class="controls">
+        <!-- 타이머 입력 (Timer 모드에서만) -->
         <div class="input-group" id="inputArea">
             <input type="number" id="minInput" placeholder="min" min="0" max="60" value="1">
             <input type="number" id="secInput" placeholder="sec" min="0" max="59" value="0">
         </div>
 
+        <!-- 국기 선택 -->
+        <div class="flag-selector" id="flagSelector"></div>
+
+        <!-- 음성 선택 -->
         <select id="voiceSelect">
-            <option value="default" id="ui-select-default">Select Language & Voice</option>
+            <option value="default" id="ui-select-default">Select Voice</option>
         </select>
 
-        <button class="btn-start" id="btn-start" onclick="startTimer()">Start ▶</button>
-        <button class="btn-stop" id="btn-stop" onclick="stopTimer()">Pause ⏸</button>
-        <button class="btn-reset" id="btn-reset" onclick="resetTimer()">Reset ↺</button>
+        <button class="btn-start" id="btn-start" onclick="startAction()">Start ▶</button>
+        <button class="btn-stop" id="btn-stop" onclick="stopAction()">Pause ⏸</button>
+        <button class="btn-reset" id="btn-reset" onclick="resetAction()">Reset ↺</button>
     </div>
 
     <script>
-        // 1. 다국어 딕셔너리 (로고 포함)
+        // === 다국어 지원 ===
         const translations = {
             'en': {
-                title: "🦊 Kids Voice Timer", // 로고 부활
-                min_ph: "min",
-                sec_ph: "sec",
-                btn_start: "Start ▶",
-                btn_resume: "Resume ▶",
-                btn_pause: "Pause ⏸",
-                btn_reset: "Reset ↺",
-                done_msg: "Done!",
+                timer_title: "🦊 Kids Voice Timer",
+                stopwatch_title: "🦊 Kids Voice Stopwatch",
+                min_ph: "min", sec_ph: "sec", hr_ph: "hr",
+                btn_start: "Start ▶", btn_resume: "Resume ▶",
+                btn_pause: "Pause ⏸", btn_reset: "Reset ↺",
+                done_msg: "Done!", started_msg: "Started!",
                 voice_start: "Start",
                 voice_done: "Time is up! Good job.",
                 voice_1min: "One minute left.",
                 voice_30sec: "Thirty seconds left.",
                 voice_xmin: "{m} minutes left.",
-                select_default: "Select Language"
+                voice_1hr: "One hour passed.",
+                voice_xhrs: "{h} hours passed.",
+                select_default: "Select Voice"
             },
             'ko': {
-                title: "🦊 키즈 보이스 타이머",
-                min_ph: "분",
-                sec_ph: "초",
-                btn_start: "시작하기 ▶",
-                btn_resume: "이어하기 ▶",
-                btn_pause: "잠깐 멈춤 ⏸",
-                btn_reset: "처음부터 ↺",
-                done_msg: "끝!",
+                timer_title: "🦊 키즈 보이스 타이머",
+                stopwatch_title: "🦊 키즈 보이스 스톱워치",
+                min_ph: "분", sec_ph: "초", hr_ph: "시",
+                btn_start: "시작 ▶", btn_resume: "계속 ▶",
+                btn_pause: "멈춤 ⏸", btn_reset: "처음부터 ↺",
+                done_msg: "끝!", started_msg: "시작!",
                 voice_start: "시작",
-                voice_done: "시간이 종료되었습니다! 참 잘했어요.",
+                voice_done: "시간이 종료되었습니다! 잘했어요.",
                 voice_1min: "1분 남았습니다.",
                 voice_30sec: "30초 남았습니다.",
                 voice_xmin: "{m}분 남았습니다.",
-                select_default: "언어 선택 (Language)"
+                voice_1hr: "1시간 지났습니다.",
+                voice_xhrs: "{h}시간 지났습니다.",
+                select_default: "음성 선택"
             },
             'ja': {
-                title: "🦊 キッズボイスタイマー",
-                min_ph: "分",
-                sec_ph: "秒",
-                btn_start: "スタート ▶",
-                btn_resume: "再開 ▶",
-                btn_pause: "一時停止 ⏸",
-                btn_reset: "リセット ↺",
-                done_msg: "終了!",
+                timer_title: "🦊 キッズボイスタイマー",
+                stopwatch_title: "🦊 キッズボイスストップウォッチ",
+                min_ph: "分", sec_ph: "秒", hr_ph: "時",
+                btn_start: "スタート ▶", btn_resume: "再開 ▶",
+                btn_pause: "停止 ⏸", btn_reset: "リセット ↺",
+                done_msg: "終了!", started_msg: "スタート!",
                 voice_start: "スタート",
                 voice_done: "時間です！よくできました。",
                 voice_1min: "あと1分です。",
                 voice_30sec: "あと30秒です。",
                 voice_xmin: "あと{m}分です。",
-                select_default: "言語を選択"
+                voice_1hr: "1時間経過しました。",
+                voice_xhrs: "{h}時間経過しました。",
+                select_default: "音声を選択"
             },
             'zh': {
-                title: "🦊 儿童语音计时器",
-                min_ph: "分",
-                sec_ph: "秒",
-                btn_start: "开始 ▶",
-                btn_resume: "继续 ▶",
-                btn_pause: "暂停 ⏸",
-                btn_reset: "重置 ↺",
-                done_msg: "完成!",
+                timer_title: "🦊 儿童语音计时器",
+                stopwatch_title: "🦊 儿童语音秒表",
+                min_ph: "分", sec_ph: "秒", hr_ph: "时",
+                btn_start: "开始 ▶", btn_resume: "继续 ▶",
+                btn_pause: "暂停 ⏸", btn_reset: "重置 ↺",
+                done_msg: "完成!", started_msg: "开始!",
                 voice_start: "开始",
                 voice_done: "时间到了！做得好。",
                 voice_1min: "还剩1分钟。",
                 voice_30sec: "还剩30秒。",
                 voice_xmin: "还剩{m}分钟。",
-                select_default: "选择语言"
+                voice_1hr: "已过1小时。",
+                voice_xhrs: "已过{h}小时。",
+                select_default: "选择语音"
             },
             'es': {
-                title: "🦊 Temporizador de Voz",
-                min_ph: "min",
-                sec_ph: "seg",
-                btn_start: "Iniciar ▶",
-                btn_resume: "Reanudar ▶",
-                btn_pause: "Pausa ⏸",
-                btn_reset: "Reiniciar ↺",
-                done_msg: "¡Listo!",
+                timer_title: "🦊 Temporizador de Voz",
+                stopwatch_title: "🦊 Cronómetro de Voz",
+                min_ph: "min", sec_ph: "seg", hr_ph: "hr",
+                btn_start: "Iniciar ▶", btn_resume: "Reanudar ▶",
+                btn_pause: "Pausa ⏸", btn_reset: "Reiniciar ↺",
+                done_msg: "¡Listo!", started_msg: "¡Comenzó!",
                 voice_start: "Comienzo",
                 voice_done: "¡Se acabó el tiempo! Muy bien.",
                 voice_1min: "Queda un minuto.",
                 voice_30sec: "Quedan treinta segundos.",
                 voice_xmin: "Quedan {m} minutos.",
-                select_default: "Seleccionar idioma"
+                voice_1hr: "Ha pasado una hora.",
+                voice_xhrs: "Han pasado {h} horas.",
+                select_default: "Seleccionar voz"
+            },
+            'fr': {
+                timer_title: "🦊 Minuteur Vocal",
+                stopwatch_title: "🦊 Chronomètre Vocal",
+                min_ph: "min", sec_ph: "sec", hr_ph: "hr",
+                btn_start: "Démarrer ▶", btn_resume: "Reprendre ▶",
+                btn_pause: "Pause ⏸", btn_reset: "Réinitialiser ↺",
+                done_msg: "Fini!", started_msg: "Démarré!",
+                voice_start: "Démarrer",
+                voice_done: "C'est l'heure! Bien joué.",
+                voice_1min: "Une minute restante.",
+                voice_30sec: "Trente secondes restantes.",
+                voice_xmin: "{m} minutes restantes.",
+                voice_1hr: "Une heure écoulée.",
+                voice_xhrs: "{h} heures écoulées.",
+                select_default: "Choisir la voix"
+            },
+            'de': {
+                timer_title: "🦊 Sprach-Timer",
+                stopwatch_title: "🦊 Sprach-Stoppuhr",
+                min_ph: "min", sec_ph: "sek", hr_ph: "std",
+                btn_start: "Start ▶", btn_resume: "Fortsetzen ▶",
+                btn_pause: "Pause ⏸", btn_reset: "Zurücksetzen ↺",
+                done_msg: "Fertig!", started_msg: "Gestartet!",
+                voice_start: "Start",
+                voice_done: "Zeit ist um! Gut gemacht.",
+                voice_1min: "Eine Minute übrig.",
+                voice_30sec: "Dreißig Sekunden übrig.",
+                voice_xmin: "{m} Minuten übrig.",
+                voice_1hr: "Eine Stunde vergangen.",
+                voice_xhrs: "{h} Stunden vergangen.",
+                select_default: "Stimme wählen"
+            },
+            'it': {
+                timer_title: "🦊 Timer Vocale",
+                stopwatch_title: "🦊 Cronometro Vocale",
+                min_ph: "min", sec_ph: "sec", hr_ph: "ora",
+                btn_start: "Avvia ▶", btn_resume: "Riprendi ▶",
+                btn_pause: "Pausa ⏸", btn_reset: "Resetta ↺",
+                done_msg: "Fatto!", started_msg: "Avviato!",
+                voice_start: "Avvia",
+                voice_done: "Tempo scaduto! Bravo.",
+                voice_1min: "Un minuto rimasto.",
+                voice_30sec: "Trenta secondi rimasti.",
+                voice_xmin: "{m} minuti rimasti.",
+                voice_1hr: "Un'ora trascorsa.",
+                voice_xhrs: "{h} ore trascorse.",
+                select_default: "Seleziona voce"
+            },
+            'pt': {
+                timer_title: "🦊 Temporizador de Voz",
+                stopwatch_title: "🦊 Cronômetro de Voz",
+                min_ph: "min", sec_ph: "seg", hr_ph: "hr",
+                btn_start: "Iniciar ▶", btn_resume: "Retomar ▶",
+                btn_pause: "Pausar ⏸", btn_reset: "Reiniciar ↺",
+                done_msg: "Pronto!", started_msg: "Iniciado!",
+                voice_start: "Iniciar",
+                voice_done: "Acabou o tempo! Muito bem.",
+                voice_1min: "Um minuto restante.",
+                voice_30sec: "Trinta segundos restantes.",
+                voice_xmin: "{m} minutos restantes.",
+                voice_1hr: "Uma hora passada.",
+                voice_xhrs: "{h} horas passadas.",
+                select_default: "Selecionar voz"
+            },
+            'ru': {
+                timer_title: "🦊 Голосовой Таймер",
+                stopwatch_title: "🦊 Голосовой Секундомер",
+                min_ph: "мин", sec_ph: "сек", hr_ph: "час",
+                btn_start: "Старт ▶", btn_resume: "Продолжить ▶",
+                btn_pause: "Пауза ⏸", btn_reset: "Сброс ↺",
+                done_msg: "Готово!", started_msg: "Запущено!",
+                voice_start: "Старт",
+                voice_done: "Время вышло! Отлично.",
+                voice_1min: "Осталась одна минута.",
+                voice_30sec: "Осталось тридцать секунд.",
+                voice_xmin: "Осталось {m} минут.",
+                voice_1hr: "Прошёл один час.",
+                voice_xhrs: "Прошло {h} часов.",
+                select_default: "Выбрать голос"
+            },
+            'ar': {
+                timer_title: "🦊 مؤقت صوتي للأطفال",
+                stopwatch_title: "🦊 ساعة إيقاف صوتية",
+                min_ph: "دقيقة", sec_ph: "ثانية", hr_ph: "ساعة",
+                btn_start: "ابدأ ▶", btn_resume: "استئناف ▶",
+                btn_pause: "إيقاف ⏸", btn_reset: "إعادة تعيين ↺",
+                done_msg: "انتهى!", started_msg: "بدأ!",
+                voice_start: "ابدأ",
+                voice_done: "انتهى الوقت! أحسنت.",
+                voice_1min: "دقيقة واحدة متبقية.",
+                voice_30sec: "ثلاثون ثانية متبقية.",
+                voice_xmin: "{m} دقائق متبقية.",
+                voice_1hr: "مضت ساعة واحدة.",
+                voice_xhrs: "مضت {h} ساعات.",
+                select_default: "اختر الصوت"
+            },
+            'hi': {
+                timer_title: "🦊 किड्स वॉयस टाइमर",
+                stopwatch_title: "🦊 किड्स वॉयस स्टॉपवॉच",
+                min_ph: "मिनट", sec_ph: "सेकंड", hr_ph: "घंटा",
+                btn_start: "शुरू करें ▶", btn_resume: "फिर से शुरू ▶",
+                btn_pause: "रोकें ⏸", btn_reset: "रीसेट ↺",
+                done_msg: "पूरा हुआ!", started_msg: "शुरू हुआ!",
+                voice_start: "शुरू",
+                voice_done: "समय समाप्त! शाबाश।",
+                voice_1min: "एक मिनट बचा है।",
+                voice_30sec: "तीस सेकंड बचे हैं।",
+                voice_xmin: "{m} मिनट बचे हैं।",
+                voice_1hr: "एक घंटा बीत गया।",
+                voice_xhrs: "{h} घंटे बीत गए।",
+                select_default: "आवाज़ चुनें"
             }
         };
 
-        // 전역 상태
-        let timerInterval;
-        let totalSeconds = 0;
-        let remainingSeconds = 0;
+        // 국기 → 언어 매핑 (확장 가능)
+        const flagToLang = {
+            '🇺🇸': ['en'],      // English
+            '🇰🇷': ['ko'],      // Korean
+            '🇯🇵': ['ja'],      // Japanese
+            '🇨🇳': ['zh', 'cmn', 'yue'], // Chinese
+            '🇪🇸': ['es'],      // Spanish
+            '🇫🇷': ['fr'],      // French
+            '🇩🇪': ['de'],      // German
+            '🇮🇹': ['it'],      // Italian
+            '🇵🇹': ['pt'],      // Portuguese
+            '🇷🇺': ['ru'],      // Russian
+            '🇸🇦': ['ar'],      // Arabic
+            '🇮🇳': ['hi', 'bn', 'te', 'ta', 'mr', 'gu'] // Indian languages
+        };
+
+        // === 전역 상태 ===
+        let currentMode = 'timer'; // 'timer' or 'stopwatch'
+        let interval;
+        let elapsedSeconds = 0; // 스톱워치용
+        let totalSeconds = 0;   // 타이머용 총 시간
+        let remainingSeconds = 0; // 타이머용 남은 시간
         let wakeLock = null;
         let synth = window.speechSynthesis;
         let selectedVoice = null;
         let isRunning = false;
-        let currentLang = 'en'; 
+        let currentLang = 'en';
+        let selectedFlag = null;
+        let allVoices = [];
 
+        // === DOM 요소 ===
         const display = document.getElementById('display');
         const circleProgress = document.querySelector('.circle-progress');
         const voiceSelect = document.getElementById('voiceSelect');
-        const fullDashArray = 880;
-
-        // UI 요소
+        const flagSelector = document.getElementById('flagSelector');
         const uiTitle = document.getElementById('ui-title');
         const uiMinInput = document.getElementById('minInput');
         const uiSecInput = document.getElementById('secInput');
         const uiBtnStart = document.getElementById('btn-start');
         const uiBtnStop = document.getElementById('btn-stop');
         const uiBtnReset = document.getElementById('btn-reset');
-        const uiSelectDefault = document.getElementById('ui-select-default');
+        const inputArea = document.getElementById('inputArea');
+        const fullDashArray = 880;
 
-        // UI 업데이트
+        // === 모드 전환 ===
+        function switchMode(mode) {
+            if (isRunning) {
+                if (!confirm('Stop current activity and switch mode?')) return;
+                resetAction();
+            }
+
+            currentMode = mode;
+            document.body.className = `mode-${mode}`;
+            
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            if (mode === 'timer') {
+                inputArea.classList.remove('hidden');
+                display.textContent = '00:00';
+            } else {
+                inputArea.classList.add('hidden');
+                display.textContent = '00:00:00';
+            }
+
+            updateUIText(currentLang);
+            resetProgress();
+        }
+
+        // === UI 업데이트 ===
         function updateUIText(langCode) {
             const langData = translations[langCode] || translations['en'];
-            
-            document.documentElement.lang = langCode;
             currentLang = langCode;
+            document.documentElement.lang = langCode;
 
-            uiTitle.textContent = langData.title; // 로고(이모지) 포함 텍스트
-            uiMinInput.placeholder = langData.min_ph;
-            uiSecInput.placeholder = langData.sec_ph;
-            uiSelectDefault.textContent = langData.select_default;
+            if (currentMode === 'timer') {
+                uiTitle.textContent = langData.timer_title;
+                if (uiMinInput) uiMinInput.placeholder = langData.min_ph;
+                if (uiSecInput) uiSecInput.placeholder = langData.sec_ph;
+            } else {
+                uiTitle.textContent = langData.stopwatch_title;
+            }
 
-            if(isRunning) {
+            document.getElementById('ui-select-default').textContent = langData.select_default;
+
+            if (isRunning) {
                 uiBtnStop.textContent = langData.btn_pause;
             } else {
-                if(remainingSeconds > 0 && remainingSeconds < totalSeconds) {
+                if ((currentMode === 'timer' && remainingSeconds > 0 && remainingSeconds < totalSeconds) ||
+                    (currentMode === 'stopwatch' && elapsedSeconds > 0)) {
                     uiBtnStart.textContent = langData.btn_resume;
                 } else {
                     uiBtnStart.textContent = langData.btn_start;
@@ -300,80 +606,97 @@
             uiBtnReset.textContent = langData.btn_reset;
         }
 
-        updateUIText('en');
+        // === 국기 렌더링 ===
+        function renderFlags() {
+            flagSelector.innerHTML = '';
+            Object.keys(flagToLang).forEach(flag => {
+                const btn = document.createElement('button');
+                btn.className = 'flag-option';
+                btn.textContent = flag;
+                btn.onclick = () => selectFlag(flag);
+                flagSelector.appendChild(btn);
+            });
+        }
 
-        // --- 2. 개선된 음성 목록 로딩 (국가별 그룹화) ---
-        function populateVoiceList() {
-            let voices = synth.getVoices();
+        // === 국기 선택 ===
+        function selectFlag(flag) {
+            selectedFlag = flag;
+            
+            // 시각적 표시
+            document.querySelectorAll('.flag-option').forEach(opt => {
+                opt.classList.toggle('selected', opt.textContent === flag);
+            });
+
+            // 해당 국가 언어로 음성 필터링
+            filterVoicesByFlag(flag);
+        }
+
+        // === 국기별 음성 필터링 ===
+        function filterVoicesByFlag(flag) {
+            const targetLangs = flagToLang[flag] || [];
             
             voiceSelect.innerHTML = '';
-            voiceSelect.appendChild(uiSelectDefault);
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = 'default';
+            defaultOpt.id = 'ui-select-default';
+            defaultOpt.textContent = translations[currentLang]?.select_default || 'Select Voice';
+            voiceSelect.appendChild(defaultOpt);
 
-            if (voices.length > 0) {
-                // 1. 그룹핑을 위한 맵 생성
-                const groups = {};
-                // 언어 이름 변환기 (Intl API 활용)
-                const langNames = new Intl.DisplayNames(['en'], { type: 'language' });
+            const filtered = allVoices.filter(v => {
+                const baseLang = v.lang.split('-')[0].toLowerCase();
+                return targetLangs.some(tl => baseLang === tl.toLowerCase());
+            });
 
-                voices.forEach((voice, index) => {
-                    const langCode = voice.lang; 
-                    const baseLang = langCode.split('-')[0]; // en, ko, ja...
-                    
-                    // 그룹 이름 결정 (예: Korean, English, Japanese...)
-                    let groupName;
-                    try {
-                        groupName = langNames.of(baseLang); 
-                    } catch(e) {
-                        groupName = baseLang; // 실패 시 코드 사용
-                    }
+            if (filtered.length === 0) {
+                const noVoice = document.createElement('option');
+                noVoice.textContent = '(No voices available)';
+                noVoice.disabled = true;
+                voiceSelect.appendChild(noVoice);
+                return;
+            }
 
-                    if(!groups[groupName]) groups[groupName] = [];
-                    
-                    // 그룹에 음성 정보 추가 (원래 인덱스 유지 중요!)
-                    groups[groupName].push({
-                        name: voice.name,
-                        lang: voice.lang,
-                        index: index // 원래 배열의 인덱스 저장
-                    });
-                });
+            filtered.forEach((voice, idx) => {
+                const option = document.createElement('option');
+                option.textContent = voice.name;
+                option.value = idx;
+                option.setAttribute('data-lang', voice.lang);
+                option.setAttribute('data-original-index', allVoices.indexOf(voice));
+                voiceSelect.appendChild(option);
+            });
 
-                // 2. 그룹 정렬 (한국어, 영어를 맨 위로)
-                const sortedGroupKeys = Object.keys(groups).sort((a, b) => {
-                    // 우선순위 정의
-                    const priority = ['Korean', 'English']; 
-                    const idxA = priority.indexOf(a);
-                    const idxB = priority.indexOf(b);
-
-                    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-                    if (idxA !== -1) return -1;
-                    if (idxB !== -1) return 1;
-                    return a.localeCompare(b);
-                });
-
-                // 3. DOM 생성
-                sortedGroupKeys.forEach(groupKey => {
-                    const optgroup = document.createElement('optgroup');
-                    optgroup.label = groupKey; // 상위 그룹 이름 (국가/언어)
-
-                    groups[groupKey].forEach(v => {
-                        const option = document.createElement('option');
-                        option.textContent = v.name; // 하위: 세부 음성 이름
-                        option.value = v.index; // 값은 원래 인덱스 사용
-                        option.setAttribute('data-lang', v.lang);
-                        optgroup.appendChild(option);
-                    });
-
-                    voiceSelect.appendChild(optgroup);
-                });
+            // 자동으로 첫 번째 음성 선택
+            if (filtered.length > 0) {
+                voiceSelect.selectedIndex = 1;
+                voiceSelect.dispatchEvent(new Event('change'));
             }
         }
 
-        populateVoiceList();
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = populateVoiceList;
+        // === 음성 목록 로딩 ===
+        function loadVoices() {
+            allVoices = synth.getVoices();
+            
+            // 기본 렌더링 (모든 음성)
+            voiceSelect.innerHTML = '';
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = 'default';
+            defaultOpt.id = 'ui-select-default';
+            defaultOpt.textContent = 'Select Voice';
+            voiceSelect.appendChild(defaultOpt);
+
+            allVoices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.textContent = `${voice.name} (${voice.lang})`;
+                option.value = index;
+                voiceSelect.appendChild(option);
+            });
         }
 
-        // 음성 선택 핸들러
+        loadVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        // === 음성 선택 핸들러 ===
         voiceSelect.addEventListener('change', () => {
             const index = voiceSelect.value;
             
@@ -381,58 +704,65 @@
                 selectedVoice = null;
                 updateUIText('en');
             } else {
-                const voices = synth.getVoices();
-                // value에 저장된 원래 인덱스로 음성 찾기
-                selectedVoice = voices[index]; 
+                const originalIndex = voiceSelect.options[voiceSelect.selectedIndex].getAttribute('data-original-index');
+                selectedVoice = allVoices[originalIndex || index];
                 
                 if (selectedVoice) {
-                    const langCode = selectedVoice.lang.split('-')[0];
-                    updateUIText(langCode);
+                    const baseLang = selectedVoice.lang.split('-')[0];
+                    updateUIText(baseLang);
                 }
             }
         });
 
-        // --- 타이머 로직 (기존 동일) ---
-        async function startTimer() {
+        // === 시작 ===
+        async function startAction() {
             if (isRunning) return;
 
-            if (remainingSeconds === 0) {
-                const min = parseInt(uiMinInput.value) || 0;
-                const sec = parseInt(uiSecInput.value) || 0;
-                totalSeconds = min * 60 + sec;
-                remainingSeconds = totalSeconds;
+            if (currentMode === 'timer') {
+                if (remainingSeconds === 0) {
+                    const min = parseInt(uiMinInput.value) || 0;
+                    const sec = parseInt(uiSecInput.value) || 0;
+                    totalSeconds = min * 60 + sec;
+                    remainingSeconds = totalSeconds;
+                }
+                if (totalSeconds <= 0) return alert("Please set time!");
+                startTimer();
+            } else {
+                startStopwatch();
             }
-
-            if (totalSeconds <= 0) return alert("Time?");
-
-            uiBtnStart.style.display = 'none';
-            uiBtnStop.style.display = 'block';
-            uiBtnReset.style.display = 'none';
-            document.getElementById('inputArea').style.display = 'none';
-            voiceSelect.style.display = 'none';
-
-            const langData = translations[currentLang] || translations['en'];
-            uiBtnStop.textContent = langData.btn_pause;
-
-            isRunning = true;
-            speak(langData.voice_start);
 
             try {
                 wakeLock = await navigator.wakeLock.request('screen');
-            } catch (err) { console.log('WakeLock error:', err); }
+            } catch (err) { 
+                console.log('WakeLock error:', err); 
+            }
+        }
+
+        // === 타이머 시작 ===
+        function startTimer() {
+            isRunning = true;
+            
+            uiBtnStart.style.display = 'none';
+            uiBtnStop.style.display = 'block';
+            uiBtnReset.style.display = 'none';
+            inputArea.style.display = 'none';
+            flagSelector.style.display = 'none';
+            voiceSelect.style.display = 'none';
+
+            const langData = translations[currentLang] || translations['en'];
+            speak(langData.voice_start);
 
             const startTime = Date.now();
             const initialRemaining = remainingSeconds;
-            updateDisplay();
 
-            timerInterval = setInterval(() => {
+            interval = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 const currentRemaining = initialRemaining - elapsed;
 
                 if (currentRemaining !== remainingSeconds) {
                     remainingSeconds = currentRemaining;
-                    updateDisplay();
-                    checkAnnounce(remainingSeconds);
+                    updateTimerDisplay();
+                    checkTimerAnnounce(remainingSeconds);
 
                     if (remainingSeconds <= 0) {
                         finishTimer();
@@ -441,62 +771,94 @@
             }, 200);
         }
 
-        function stopTimer() {
-            if (!isRunning) return;
-            clearInterval(timerInterval);
-            isRunning = false;
+        // === 스톱워치 시작 ===
+        function startStopwatch() {
+            isRunning = true;
             
+            uiBtnStart.style.display = 'none';
+            uiBtnStop.style.display = 'block';
+            uiBtnReset.style.display = 'none';
+            flagSelector.style.display = 'none';
+            voiceSelect.style.display = 'none';
+
             const langData = translations[currentLang] || translations['en'];
-            
+            speak(langData.voice_start);
+
+            const startTime = Date.now();
+            const initialElapsed = elapsedSeconds;
+
+            interval = setInterval(() => {
+                const delta = Math.floor((Date.now() - startTime) / 1000);
+                elapsedSeconds = initialElapsed + delta;
+                updateStopwatchDisplay();
+                checkStopwatchAnnounce(elapsedSeconds);
+            }, 200);
+        }
+
+        // === 멈춤 ===
+        function stopAction() {
+            if (!isRunning) return;
+            clearInterval(interval);
+            isRunning = false;
+
+            const langData = translations[currentLang] || translations['en'];
             uiBtnStart.textContent = langData.btn_resume;
             uiBtnStart.style.display = 'block';
             uiBtnStop.style.display = 'none';
-            uiBtnReset.textContent = langData.btn_reset;
             uiBtnReset.style.display = 'block';
-            
+
             if (wakeLock) {
                 wakeLock.release().then(() => wakeLock = null);
             }
         }
 
-        function resetTimer() {
-            stopTimer();
+        // === 리셋 ===
+        function resetAction() {
+            stopAction();
+            
+            elapsedSeconds = 0;
             remainingSeconds = 0;
             totalSeconds = 0;
-            
-            const langData = translations[currentLang] || translations['en'];
 
+            const langData = translations[currentLang] || translations['en'];
             uiBtnStart.textContent = langData.btn_start;
             uiBtnStart.style.display = 'block';
             uiBtnStop.style.display = 'none';
             uiBtnReset.style.display = 'none';
-            document.getElementById('inputArea').style.display = 'flex';
+
+            if (currentMode === 'timer') {
+                inputArea.style.display = 'flex';
+                display.textContent = '00:00';
+            } else {
+                display.textContent = '00:00:00';
+            }
+
+            flagSelector.style.display = 'flex';
             voiceSelect.style.display = 'block';
-            
+
             display.classList.remove('pulse');
-            display.style.color = '#4A5568';
-            display.textContent = "00:00";
-            circleProgress.style.strokeDashoffset = 0;
+            display.style.color = '#fff';
+            resetProgress();
         }
 
+        // === 타이머 완료 ===
         function finishTimer() {
-            stopTimer();
+            stopAction();
             remainingSeconds = 0;
-            updateDisplay();
             
             const langData = translations[currentLang] || translations['en'];
-
             display.textContent = langData.done_msg;
             display.classList.add('pulse');
-            display.style.color = '#F56565';
-            
+            display.style.color = '#FFD700';
+
             speak(langData.voice_done);
             
             uiBtnStart.style.display = 'none';
             uiBtnReset.style.display = 'block';
         }
 
-        function updateDisplay() {
+        // === 타이머 디스플레이 업데이트 ===
+        function updateTimerDisplay() {
             const min = Math.floor(Math.max(remainingSeconds, 0) / 60);
             const sec = Math.max(remainingSeconds, 0) % 60;
             display.textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
@@ -508,7 +870,22 @@
             }
         }
 
-        function checkAnnounce(seconds) {
+        // === 스톱워치 디스플레이 업데이트 ===
+        function updateStopwatchDisplay() {
+            const hrs = Math.floor(elapsedSeconds / 3600);
+            const min = Math.floor((elapsedSeconds % 3600) / 60);
+            const sec = elapsedSeconds % 60;
+            display.textContent = `${String(hrs).padStart(2, '0')}:${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+
+            // 진행바: 최대 1시간 기준으로 순환
+            const maxSeconds = 3600;
+            const progress = (elapsedSeconds % maxSeconds) / maxSeconds;
+            const offset = fullDashArray - (progress * fullDashArray);
+            circleProgress.style.strokeDashoffset = offset;
+        }
+
+        // === 타이머 안내 음성 ===
+        function checkTimerAnnounce(seconds) {
             if (seconds <= 0) return;
             
             const langData = translations[currentLang] || translations['en'];
@@ -516,20 +893,38 @@
 
             if (seconds > 60 && seconds % 60 === 0) {
                 msg = langData.voice_xmin.replace('{m}', seconds / 60);
-            } 
-            else if (seconds === 60) {
+            } else if (seconds === 60) {
                 msg = langData.voice_1min;
-            } 
-            else if (seconds === 30) {
+            } else if (seconds === 30) {
                 msg = langData.voice_30sec;
-            } 
-            else if (seconds <= 10) {
+            } else if (seconds <= 10) {
                 msg = `${seconds}`;
             }
 
             if (msg) speak(msg);
         }
 
+        // === 스톱워치 안내 음성 ===
+        function checkStopwatchAnnounce(seconds) {
+            const langData = translations[currentLang] || translations['en'];
+            let msg = "";
+
+            if (seconds > 0 && seconds % 3600 === 0) {
+                const hrs = seconds / 3600;
+                if (hrs === 1) {
+                    msg = langData.voice_1hr;
+                } else {
+                    msg = langData.voice_xhrs.replace('{h}', hrs);
+                }
+            } else if (seconds > 0 && seconds % 60 === 0 && seconds < 3600) {
+                const mins = seconds / 60;
+                msg = langData.voice_xmin.replace('{m}', mins);
+            }
+
+            if (msg) speak(msg);
+        }
+
+        // === 음성 출력 ===
         function speak(text) {
             synth.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
@@ -545,6 +940,15 @@
             utterance.pitch = 1.1;
             synth.speak(utterance);
         }
+
+        // === 진행바 리셋 ===
+        function resetProgress() {
+            circleProgress.style.strokeDashoffset = 0;
+        }
+
+        // === 초기화 ===
+        renderFlags();
+        updateUIText('en');
     </script>
 </body>
 </html>
