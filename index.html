@@ -620,6 +620,7 @@
         let currentLang = 'en';
         let selectedFlag = null;
         let allVoices = [];
+        let lastSpokenSecond = -1; // 음성 중복 방지용
 
         // === DOM 요소 ===
         const display = document.getElementById('display');
@@ -861,6 +862,7 @@
         // === 타이머 시작 ===
         function startTimer() {
             isRunning = true;
+            lastSpokenSecond = -1; // 음성 카운터 초기화
             
             uiBtnStart.style.display = 'none';
             uiBtnStop.style.display = 'block';
@@ -894,6 +896,7 @@
         // === 스톱워치 시작 ===
         function startStopwatch() {
             isRunning = true;
+            lastSpokenSecond = -1; // 음성 카운터 초기화
             
             uiBtnStart.style.display = 'none';
             uiBtnStop.style.display = 'block';
@@ -939,6 +942,7 @@
             elapsedSeconds = 0;
             remainingSeconds = 0;
             totalSeconds = 0;
+            lastSpokenSecond = -1; // 음성 카운터 초기화
 
             const langData = translations[currentLang] || translations['en'];
             uiBtnStart.textContent = langData.btn_start;
@@ -1020,7 +1024,7 @@
 
         // === 타이머 안내 음성 ===
         function checkTimerAnnounce(seconds) {
-            if (seconds <= 0) return;
+            if (seconds <= 0 || seconds === lastSpokenSecond) return;
             
             const langData = translations[currentLang] || translations['en'];
             let msg = "";
@@ -1035,20 +1039,25 @@
             } else if (seconds <= 100) {
                 // 1~100초 모두 카운트다운
                 msg = `${seconds}`;
-                // 10초 초과시 1.1배 속도
+                // 11~100초는 1.2배 속도
                 if (seconds > 10) {
-                    speedRate = 1.1;
+                    speedRate = 1.2;
                 }
             }
 
-            if (msg) speak(msg, speedRate);
+            if (msg) {
+                speak(msg, speedRate);
+                lastSpokenSecond = seconds;
+            }
         }
 
         // === 스톱워치 안내 음성 ===
         function checkStopwatchAnnounce(seconds) {
+            if (seconds === lastSpokenSecond) return; // 중복 방지
+            
             const langData = translations[currentLang] || translations['en'];
             let msg = "";
-            let speedRate = 1.0;
+            let speedRate = 1.2; // Stopwatch는 모든 구간 1.2배 (음성 겹침 방지)
 
             if (seconds > 0 && seconds % 3600 === 0) {
                 const hrs = seconds / 3600;
@@ -1061,15 +1070,14 @@
                 const mins = seconds / 60;
                 msg = langData.voice_xmin.replace('{m}', mins);
             } else if (seconds > 0 && seconds <= 100) {
-                // 1~100초 모두 카운트
+                // 1~100초 모두 카운트업 (1.2배 속도)
                 msg = `${seconds}`;
-                // 10초 초과시 1.1배 속도
-                if (seconds > 10) {
-                    speedRate = 1.1;
-                }
             }
 
-            if (msg) speak(msg, speedRate);
+            if (msg) {
+                speak(msg, speedRate);
+                lastSpokenSecond = seconds;
+            }
         }
 
         // === 음성 출력 ===
