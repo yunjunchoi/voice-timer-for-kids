@@ -930,8 +930,9 @@
             if (index === 'default') {
                 selectedVoice = null;
             } else {
-                const originalIndex = voiceSelect.options[voiceSelect.selectedIndex].getAttribute('data-original-index');
-                selectedVoice = allVoices[originalIndex || index];
+                const originalIndex = parseInt(voiceSelect.options[voiceSelect.selectedIndex].getAttribute('data-original-index'));
+                selectedVoice = allVoices[originalIndex];
+                console.log('Selected voice:', selectedVoice?.name, selectedVoice?.lang);
             }
         });
 
