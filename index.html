@@ -1048,6 +1048,7 @@
         function checkStopwatchAnnounce(seconds) {
             const langData = translations[currentLang] || translations['en'];
             let msg = "";
+            let speedRate = 1.0;
 
             if (seconds > 0 && seconds % 3600 === 0) {
                 const hrs = seconds / 3600;
@@ -1059,9 +1060,16 @@
             } else if (seconds > 0 && seconds % 60 === 0 && seconds < 3600) {
                 const mins = seconds / 60;
                 msg = langData.voice_xmin.replace('{m}', mins);
+            } else if (seconds > 0 && seconds <= 100) {
+                // 1~100초 모두 카운트
+                msg = `${seconds}`;
+                // 10초 초과시 1.1배 속도
+                if (seconds > 10) {
+                    speedRate = 1.1;
+                }
             }
 
-            if (msg) speak(msg);
+            if (msg) speak(msg, speedRate);
         }
 
         // === 음성 출력 ===
