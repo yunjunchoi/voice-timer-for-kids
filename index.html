@@ -852,6 +852,11 @@
                 opt.classList.toggle('selected', opt.textContent === flag);
             });
 
+            // 국기에 따라 UI 언어 변경
+            const targetLangs = flagToLang[flag] || ['en'];
+            const uiLang = targetLangs[0]; // 첫 번째 언어를 UI 언어로
+            updateUIText(uiLang);
+
             filterVoicesByFlag(flag);
         }
 
@@ -924,15 +929,9 @@
             
             if (index === 'default') {
                 selectedVoice = null;
-                updateUIText('en');
             } else {
                 const originalIndex = voiceSelect.options[voiceSelect.selectedIndex].getAttribute('data-original-index');
                 selectedVoice = allVoices[originalIndex || index];
-                
-                if (selectedVoice) {
-                    const baseLang = selectedVoice.lang.split('-')[0];
-                    updateUIText(baseLang);
-                }
             }
         });
 
