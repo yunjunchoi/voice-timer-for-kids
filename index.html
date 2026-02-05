@@ -267,6 +267,82 @@
             color: #4A5568;
         }
 
+        /* 음성 속도 조절 슬라이더 */
+        .speed-control {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+        }
+
+        .speed-label {
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #667eea;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .speed-value {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #f5576c;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.9);
+        }
+
+        .speed-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 10px;
+            background: linear-gradient(to right, #48BB78 0%, #667eea 50%, #F56565 100%);
+            outline: none;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+
+        .speed-slider:hover {
+            opacity: 1;
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+
+        .speed-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+        }
+
+        .speed-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+
+        .speed-slider::-moz-range-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+        }
+
         button {
             padding: 16px;
             font-size: 1.3rem;
@@ -377,6 +453,14 @@
             <option value="default" id="ui-select-default">Select Voice</option>
         </select>
 
+        <!-- 음성 속도 조절 -->
+        <div class="speed-control">
+            <div class="speed-label" id="speedLabel">🎵 Voice Speed</div>
+            <div class="speed-value" id="speedValue">1.0x</div>
+            <input type="range" class="speed-slider" id="speedSlider" 
+                   min="0.5" max="2.0" step="0.1" value="1.0">
+        </div>
+
         <button class="btn-start" id="btn-start" onclick="startAction()">Start ▶</button>
         <button class="btn-stop" id="btn-stop" onclick="stopAction()">Pause ⏸</button>
         <button class="btn-reset" id="btn-reset" onclick="resetAction()">Reset ↺</button>
@@ -390,6 +474,7 @@
                 stopwatch_title: "🦊 Kids Voice Stopwatch",
                 label_min: "Minutes", label_sec: "Seconds",
                 total_sec: "Total: {s} seconds",
+                speed_label: "🎵 Voice Speed",
                 btn_start: "Start ▶", btn_resume: "Resume ▶",
                 btn_pause: "Pause ⏸", btn_reset: "Reset ↺",
                 done_msg: "Done!", started_msg: "Started!",
@@ -407,6 +492,7 @@
                 stopwatch_title: "🦊 키즈 보이스 스톱워치",
                 label_min: "분", label_sec: "초",
                 total_sec: "총 {s}초",
+                speed_label: "🎵 음성 속도",
                 btn_start: "시작 ▶", btn_resume: "계속 ▶",
                 btn_pause: "멈춤 ⏸", btn_reset: "처음부터 ↺",
                 done_msg: "끝!", started_msg: "시작!",
@@ -424,6 +510,7 @@
                 stopwatch_title: "🦊 キッズボイスストップウォッチ",
                 label_min: "分", label_sec: "秒",
                 total_sec: "合計: {s}秒",
+                speed_label: "🎵 音声速度",
                 btn_start: "スタート ▶", btn_resume: "再開 ▶",
                 btn_pause: "停止 ⏸", btn_reset: "リセット ↺",
                 done_msg: "終了!", started_msg: "スタート!",
@@ -441,6 +528,7 @@
                 stopwatch_title: "🦊 儿童语音秒表",
                 label_min: "分钟", label_sec: "秒",
                 total_sec: "总共: {s}秒",
+                speed_label: "🎵 语音速度",
                 btn_start: "开始 ▶", btn_resume: "继续 ▶",
                 btn_pause: "暂停 ⏸", btn_reset: "重置 ↺",
                 done_msg: "完成!", started_msg: "开始!",
@@ -458,6 +546,7 @@
                 stopwatch_title: "🦊 Cronómetro de Voz",
                 label_min: "Minutos", label_sec: "Segundos",
                 total_sec: "Total: {s} segundos",
+                speed_label: "🎵 Velocidad de Voz",
                 btn_start: "Iniciar ▶", btn_resume: "Reanudar ▶",
                 btn_pause: "Pausa ⏸", btn_reset: "Reiniciar ↺",
                 done_msg: "¡Listo!", started_msg: "¡Comenzó!",
@@ -475,6 +564,7 @@
                 stopwatch_title: "🦊 Chronomètre Vocal",
                 label_min: "Minutes", label_sec: "Secondes",
                 total_sec: "Total: {s} secondes",
+                speed_label: "🎵 Vitesse Vocale",
                 btn_start: "Démarrer ▶", btn_resume: "Reprendre ▶",
                 btn_pause: "Pause ⏸", btn_reset: "Réinitialiser ↺",
                 done_msg: "Fini!", started_msg: "Démarré!",
@@ -492,6 +582,7 @@
                 stopwatch_title: "🦊 Sprach-Stoppuhr",
                 label_min: "Minuten", label_sec: "Sekunden",
                 total_sec: "Gesamt: {s} Sekunden",
+                speed_label: "🎵 Sprachgeschwindigkeit",
                 btn_start: "Start ▶", btn_resume: "Fortsetzen ▶",
                 btn_pause: "Pause ⏸", btn_reset: "Zurücksetzen ↺",
                 done_msg: "Fertig!", started_msg: "Gestartet!",
@@ -509,6 +600,7 @@
                 stopwatch_title: "🦊 Cronometro Vocale",
                 label_min: "Minuti", label_sec: "Secondi",
                 total_sec: "Totale: {s} secondi",
+                speed_label: "🎵 Velocità Voce",
                 btn_start: "Avvia ▶", btn_resume: "Riprendi ▶",
                 btn_pause: "Pausa ⏸", btn_reset: "Resetta ↺",
                 done_msg: "Fatto!", started_msg: "Avviato!",
@@ -526,6 +618,7 @@
                 stopwatch_title: "🦊 Cronômetro de Voz",
                 label_min: "Minutos", label_sec: "Segundos",
                 total_sec: "Total: {s} segundos",
+                speed_label: "🎵 Velocidade da Voz",
                 btn_start: "Iniciar ▶", btn_resume: "Retomar ▶",
                 btn_pause: "Pausar ⏸", btn_reset: "Reiniciar ↺",
                 done_msg: "Pronto!", started_msg: "Iniciado!",
@@ -543,6 +636,7 @@
                 stopwatch_title: "🦊 Голосовой Секундомер",
                 label_min: "Минуты", label_sec: "Секунды",
                 total_sec: "Всего: {s} секунд",
+                speed_label: "🎵 Скорость Речи",
                 btn_start: "Старт ▶", btn_resume: "Продолжить ▶",
                 btn_pause: "Пауза ⏸", btn_reset: "Сброс ↺",
                 done_msg: "Готово!", started_msg: "Запущено!",
@@ -560,6 +654,7 @@
                 stopwatch_title: "🦊 ساعة إيقاف صوتية",
                 label_min: "دقائق", label_sec: "ثواني",
                 total_sec: "المجموع: {s} ثانية",
+                speed_label: "🎵 سرعة الصوت",
                 btn_start: "ابدأ ▶", btn_resume: "استئناف ▶",
                 btn_pause: "إيقاف ⏸", btn_reset: "إعادة تعيين ↺",
                 done_msg: "انتهى!", started_msg: "بدأ!",
@@ -577,6 +672,7 @@
                 stopwatch_title: "🦊 किड्स वॉयस स्टॉपवॉच",
                 label_min: "मिनट", label_sec: "सेकंड",
                 total_sec: "कुल: {s} सेकंड",
+                speed_label: "🎵 आवाज़ की गति",
                 btn_start: "शुरू करें ▶", btn_resume: "फिर से शुरू ▶",
                 btn_pause: "रोकें ⏸", btn_reset: "रीसेट ↺",
                 done_msg: "पूरा हुआ!", started_msg: "शुरू हुआ!",
@@ -621,6 +717,7 @@
         let selectedFlag = null;
         let allVoices = [];
         let lastSpokenSecond = -1; // 음성 중복 방지용
+        let userSpeedMultiplier = 1.0; // 사용자 설정 속도 배율
 
         // === DOM 요소 ===
         const display = document.getElementById('display');
@@ -633,6 +730,9 @@
         const bg60min = document.getElementById('bg60min');
         const voiceSelect = document.getElementById('voiceSelect');
         const flagSelector = document.getElementById('flagSelector');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        const speedLabel = document.getElementById('speedLabel');
         const uiTitle = document.getElementById('ui-title');
         const labelMin = document.getElementById('labelMin');
         const labelSec = document.getElementById('labelSec');
@@ -708,6 +808,7 @@
             }
 
             document.getElementById('ui-select-default').textContent = langData.select_default;
+            speedLabel.textContent = langData.speed_label;
 
             if (isRunning) {
                 uiBtnStop.textContent = langData.btn_pause;
@@ -1081,7 +1182,7 @@
         }
 
         // === 음성 출력 ===
-        function speak(text, rate = 1.0) {
+        function speak(text, baseRate = 1.0) {
             synth.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             
@@ -1092,7 +1193,8 @@
                 utterance.lang = 'en-US';
             }
             
-            utterance.rate = rate;
+            // 기본 속도에 사용자 설정 배율 곱하기
+            utterance.rate = baseRate * userSpeedMultiplier;
             utterance.pitch = 1.1;
             synth.speak(utterance);
         }
@@ -1104,6 +1206,12 @@
             progress1min.style.strokeDashoffset = 0;
             progress60min.style.strokeDashoffset = 0;
         }
+
+        // === 음성 속도 슬라이더 이벤트 ===
+        speedSlider.addEventListener('input', (e) => {
+            userSpeedMultiplier = parseFloat(e.target.value);
+            speedValue.textContent = `${userSpeedMultiplier.toFixed(1)}x`;
+        });
 
         // === 초기화 ===
         renderFlags();
